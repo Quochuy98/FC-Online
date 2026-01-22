@@ -283,46 +283,58 @@ Nếu crawl số lượng lớn, có thể restart crawler theo từng batch nh�
 ```
 Drawl_FCONLINE/
 ├── server/
-│   └── api.js                    # Express API server
-├── public/
-│   ├── index.html                # Trang tìm kiếm
-│   ├── player.html               # Trang chi tiết cầu thủ
+│   └── api.js                    # Express API server + EJS routes
+├── views/                        # ⭐ EJS Templates (Server-side rendering)
+│   ├── partials/
+│   │   ├── header.ejs            # Shared header (DRY)
+│   │   └── footer.ejs            # Shared footer (DRY)
+│   └── pages/
+│       ├── home.ejs              # Trang tìm kiếm cầu thủ (/)
+│       ├── club-search.ejs       # Tìm theo câu lạc bộ (/club-search)
+│       ├── player.ejs            # Chi tiết cầu thủ (/player)
+│       └── compare.ejs           # So sánh cầu thủ (/compare)
+├── public/                       # Static assets
 │   ├── css/
-│   │   ├── badge.css             # Spritesheet CSS
-│   │   ├── style.css             # Main CSS
-│   │   └── player-detail.css    # Detail page CSS
-│   └── js/
-│       ├── api.js                # API client
-│       ├── search.js             # Search page logic
-│       └── player-detail.js     # Detail page logic
+│   │   ├── badge.css             # Spritesheet CSS (seasons)
+│   │   ├── seasons.css           # Season sprites
+│   │   └── upgrade.css           # Upgrade level sprites
+│   ├── js/
+│   │   ├── api.js                # API client
+│   │   ├── search.js             # Search page logic
+│   │   ├── club-search.js        # Club search logic
+│   │   ├── player-detail.js      # Player detail + training
+│   │   └── compare.js            # Player comparison logic
+│   └── images/
+│       ├── enchant.png           # Upgrade level spritesheet
+│       └── spritesheet*.png      # Season sprites
 ├── src/
 │   ├── config/
 │   │   ├── constants.js          # Constants
-│   │   └── statsMapping.js       # Stats mapping
+│   │   ├── statsMapping.js       # Stats mapping (VN → EN)
+│   │   └── positionCoefficients.json # Position coefficients
 │   ├── database/
 │   │   ├── connection.js         # MongoDB connection
-│   │   └── playerRepository.js  # Database operations
+│   │   └── playerRepository.js   # Database operations
 │   ├── services/
-│   │   ├── httpClient.js         # HTTP client
-│   │   ├── playerListScraper.js # List scraper
+│   │   ├── httpClient.js         # HTTP client with retry
+│   │   ├── playerListScraper.js  # List scraper
 │   │   ├── playerDetailScraper.js # Detail scraper
-│   │   └── crawlerService.js    # Crawler orchestration
+│   │   └── crawlerService.js     # Crawler orchestration
 │   ├── utils/
-│   │   ├── logger.js             # Logger
+│   │   ├── logger.js             # Winston logger
 │   │   ├── delay.js              # Delay utility
 │   │   ├── promisePool.js        # Concurrency control
-│   │   ├── progressTracker.js   # Progress tracking
-│   │   └── seasonsProgress.js   # Multi-season progress
+│   │   ├── progressTracker.js    # Progress tracking
+│   │   └── seasonsProgress.js    # Multi-season progress
 │   └── index.js                  # Crawler entry point
 ├── examples/
-│   ├── testScraper.js           # Test scraper
-│   ├── quickStart.js            # Quick start example
-│   └── queryStatsExample.js    # Query examples
-├── badge.css                     # Original badge CSS
-├── season.html                   # Original season HTML reference
+│   ├── testScraper.js            # Test scraper
+│   ├── quickStart.js             # Quick start example
+│   └── queryStatsExample.js     # Query examples
 ├── package.json
 ├── .env
-└── README.md
+├── README.md
+└── REFACTORING.md               # EJS migration documentation
 ```
 
 ## License

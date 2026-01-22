@@ -11,6 +11,10 @@ const logger = require('../src/utils/logger');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// View Engine Setup (EJS)
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -46,6 +50,42 @@ const SEASONS = [
   '22TG', '21TG', '24WL', '23WL', '22WL', '21WL', '20WL', '19WL',
   'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL'
 ];
+
+/**
+ * Page Routes (EJS Views)
+ */
+
+// Home page (Search players)
+app.get('/', (req, res) => {
+  res.render('pages/home', {
+    title: 'FC Online Player Search - Tra cứu cầu thủ',
+    currentPage: 'home'
+  });
+});
+
+// Club search page
+app.get('/club-search', (req, res) => {
+  res.render('pages/club-search', {
+    title: 'Tìm theo câu lạc bộ - FC Online',
+    currentPage: 'club-search'
+  });
+});
+
+// Player detail page
+app.get('/player', (req, res) => {
+  res.render('pages/player', {
+    title: 'Chi tiết cầu thủ - FC Online',
+    currentPage: 'player'
+  });
+});
+
+// Compare page
+app.get('/compare', (req, res) => {
+  res.render('pages/compare', {
+    title: 'So sánh cầu thủ - FC Online',
+    currentPage: 'compare'
+  });
+});
 
 /**
  * API Routes
@@ -215,6 +255,51 @@ app.get('/api/players/search', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to search players',
+    });
+  }
+});
+
+// Get players by club career
+app.get('/api/players/by-club', async (req, res) => {
+  try {
+    const { club } = req.query;
+
+    if (!club) {
+      return res.status(400).json({
+        success: false,
+        error: 'Club name is required',
+      });
+    }
+
+    const db = getDatabase();
+    const collection = db.collection('players');
+
+    // Search for players who have this club in their career history
+    const query = {
+      'clubCareer.club': { $regex: club, $options: 'i' }
+    };
+
+    // Get all matching players, sorted by overall rating
+    const players = await collection
+      .find(query)
+      .sort({ overallDisplay: -1 })
+      .toArray();
+
+    logger.info('Club search completed', { 
+      club, 
+      resultCount: players.length 
+    });
+
+    res.json({
+      success: true,
+      players: players,
+      total: players.length,
+    });
+  } catch (error) {
+    logger.error('Club search error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search players by club',
     });
   }
 });

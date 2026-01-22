@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Badge CSS for season sprites -->
+    <link rel="stylesheet" href="/css/badge.css">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        #seasonsContainer {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        #seasonArrow {
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-primary to-secondary min-h-screen">
+    <%- include('../partials/header') %>
+    
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+    <!-- Page Title -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 text-center">
+        <h2 class="text-4xl font-bold text-primary mb-3">🎮 Tìm kiếm cầu thủ</h2>
+        <p class="text-gray-600 text-lg">Tra cứu thông tin chi tiết cầu thủ FC Online</p>
+    </div>
+
+    <!-- Search Filters -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+        <!-- Search Box -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+            <input 
+                type="text" 
+                id="playerName" 
+                placeholder="Tên cầu thủ (ví dụ: Ronaldo)"
+                class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all"
+            >
+            <button 
+                id="searchBtn" 
+                class="px-8 py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg transition-all"
+            >
+                🔍 Tìm kiếm
+            </button>
+            <button 
+                id="clearBtn" 
+                class="px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+            >
+                ✖ Xóa
+            </button>
+        </div>
+
+        <!-- Filters Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+            <!-- Position Filter -->
+            <div>
+                <label class="block font-semibold text-gray-700 mb-2">Vị trí:</label>
+                <select 
+                    id="positionFilter"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
+                >
+                    <option value="">Tất cả vị trí</option>
+                </select>
+            </div>
+
+            <!-- Overall Range -->
+            <div>
+                <label class="block font-semibold text-gray-700 mb-2">Overall:</label>
+                <div class="flex items-center gap-2">
+                    <input 
+                        type="number" 
+                        id="minOverall" 
+                        placeholder="Min" 
+                        min="0" 
+                        max="120"
+                        class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
+                    >
+                    <span class="text-gray-400">-</span>
+                    <input 
+                        type="number" 
+                        id="maxOverall" 
+                        placeholder="Max" 
+                        min="0" 
+                        max="120"
+                        class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort Info -->
+        <div class="text-sm text-gray-500 mb-6">
+            <span class="inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+                </svg>
+                Tự động sắp xếp theo Overall cao → thấp
+            </span>
+        </div>
+
+        <!-- Season Badges (Quick Filter - Collapsible) -->
+        <div class="border-t-2 border-gray-100 pt-6">
+            <button 
+                id="toggleSeasons"
+                class="w-full flex items-center justify-between font-semibold text-gray-700 mb-4 hover:text-primary transition-colors"
+                onclick="toggleSeasonsCollapse()"
+            >
+                <span class="flex items-center gap-2">
+                    <svg id="seasonArrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    Mùa giải (cho phép chọn nhiều)
+                </span>
+                <span class="text-sm font-semibold text-primary" id="seasonsCount">0/0 mùa</span>
+            </button>
+            <div id="seasonsContainer" class="overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0;">
+                <div class="flex flex-wrap gap-3 mb-3" id="quickSeasons">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="text-xs text-gray-500 italic">
+                    💡 Click để chọn/bỏ chọn mùa. Có thể chọn nhiều mùa cùng lúc.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+        <!-- Results Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b-2 border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-800">
+                Kết quả <span id="resultCount" class="text-primary text-2xl">(0)</span>
+            </h2>
+            <div id="paginationInfo" class="text-gray-600"></div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-16">
+            <div class="inline-block w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div>
+            <p class="text-gray-600 text-lg">Đang tìm kiếm...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden text-center py-16 text-red-500 bg-red-50 rounded-xl"></div>
+
+        <!-- Results List -->
+        <div id="playersGrid" class="space-y-3 mb-8">
+            <!-- Players will be populated here -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="flex justify-center gap-2 flex-wrap"></div>
+    </div>
+</div>
+
+<!-- Floating Compare Button -->
+<div id="compareBtn" class="hidden fixed bottom-8 right-8 z-50">
+    <button 
+        onclick="goToCompare()"
+        class="bg-primary hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-full shadow-2xl transition-all flex items-center gap-3"
+    >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span>So sánh (<span id="compareCount">0</span>)</span>
+    </button>
+</div>
+
+<script>
+    // Collapsible seasons logic
+    let seasonsOpen = false;
+    
+    function toggleSeasonsCollapse() {
+        seasonsOpen = !seasonsOpen;
+        const container = document.getElementById('seasonsContainer');
+        const arrow = document.getElementById('seasonArrow');
+        
+        if (seasonsOpen) {
+            // Open - auto height
+            container.style.maxHeight = container.scrollHeight + 'px';
+            arrow.style.transform = 'rotate(180deg)';
+        } else {
+            // Close
+            container.style.maxHeight = '0';
+            arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+    
+    // Auto-update max-height when content changes
+    function updateSeasonsHeight() {
+        const container = document.getElementById('seasonsContainer');
+        if (seasonsOpen && container) {
+            container.style.maxHeight = container.scrollHeight + 'px';
+        }
+    }
+</script>
+
+<%- include('../partials/footer') %>
+
+<script src="/js/api.js"></script>
+<script src="/js/search.js"></script>
+</body>
+</html>

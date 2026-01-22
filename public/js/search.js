@@ -8,6 +8,7 @@ let currentFilters = {};
 let constants = null;
 let selectedSeasons = []; // Array of selected seasons for multiple filter
 let positionCoefficients = null; // Position coefficients for stat display
+let selectedPlayersForCompare = []; // Array of player IDs selected for comparison
 
 // DOM Elements
 const playerNameInput = document.getElementById('playerName');
@@ -365,8 +366,7 @@ function getTopStatsForPosition(position, playerStats) {
  */
 function createPlayerCard(player) {
   const card = document.createElement('div');
-  card.className = 'bg-white border-2 border-gray-100 rounded-xl p-4 hover:border-primary hover:shadow-lg transition-all cursor-pointer';
-  card.onclick = () => window.location.href = `/player.html?id=${player.playerId}`;
+  card.className = 'bg-white border-2 border-gray-100 rounded-xl p-4 hover:border-primary hover:shadow-lg transition-all';
   
   // Use overallDisplay if available, otherwise extract from positions
   let overall = player.overallDisplay || 0;
@@ -391,18 +391,30 @@ function createPlayerCard(player) {
     </div>
   `).join('');
   
+  const isSelected = selectedPlayersForCompare.includes(player.playerId);
+  
   card.innerHTML = `
     <div class="flex items-center gap-4">
+      <!-- Checkbox for comparison -->
+      <input 
+        type="checkbox" 
+        class="compare-checkbox w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+        data-player-id="${player.playerId}"
+        ${isSelected ? 'checked' : ''}
+        onclick="event.stopPropagation()"
+      >
+      
       <!-- Avatar -->
       <img 
         src="${player.avatarUrl || '/images/default-player.png'}" 
         alt="${player.name}" 
-        class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+        class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0 cursor-pointer"
         onerror="this.src='/images/default-player.png'"
+        onclick="window.location.href='/player?id=${player.playerId}'"
       >
       
       <!-- Player Info -->
-      <div class="flex-1 min-w-0">
+      <div class="flex-1 min-w-0 cursor-pointer" onclick="window.location.href='/player?id=${player.playerId}'">
         <div class="flex items-center gap-3 mb-2">
           <h3 class="text-lg font-bold text-gray-800 truncate">${player.name}</h3>
           <span class="season-badge bg-${player.season}" title="${player.season}"></span>
@@ -415,18 +427,24 @@ function createPlayerCard(player) {
       </div>
       
       <!-- Top 3 Stats -->
-      <div class="hidden sm:flex items-center gap-3 lg:gap-5">
+      <div class="hidden sm:flex items-center gap-3 lg:gap-5 cursor-pointer" onclick="window.location.href='/player?id=${player.playerId}'">
         ${statsHTML}
       </div>
       
       <!-- Arrow Icon -->
-      <div class="hidden sm:block text-gray-400 flex-shrink-0">
+      <div class="hidden sm:block text-gray-400 flex-shrink-0 cursor-pointer" onclick="window.location.href='/player?id=${player.playerId}'">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
         </svg>
       </div>
     </div>
   `;
+  
+  // Add checkbox event listener
+  const checkbox = card.querySelector('.compare-checkbox');
+  checkbox.addEventListener('change', (e) => {
+    handleCompareCheckbox(player.playerId, player, e.target.checked);
+  });
   
   return card;
 }
@@ -555,5 +573,94 @@ function showError(message) {
   errorDiv.textContent = message;
 }
 
+/**
+ * Handle compare checkbox change
+ */
+function handleCompareCheckbox(playerId, playerData, isChecked) {
+  if (isChecked) {
+    // Add to selection (max 4 players)
+    if (selectedPlayersForCompare.length >= 4) {
+      alert('Chỉ có thể so sánh tối đa 4 cầu thủ!');
+      // Uncheck the checkbox
+      const checkbox = document.querySelector(`.compare-checkbox[data-player-id="${playerId}"]`);
+      if (checkbox) checkbox.checked = false;
+      return;
+    }
+    
+    // Store player data in localStorage
+    const existingData = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
+    existingData.push(playerData);
+    localStorage.setItem('comparePlayers', JSON.stringify(existingData));
+    
+    selectedPlayersForCompare.push(playerId);
+  } else {
+    // Remove from selection
+    selectedPlayersForCompare = selectedPlayersForCompare.filter(id => id !== playerId);
+    
+    // Update localStorage
+    const existingData = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
+    const updatedData = existingData.filter(p => p.playerId !== playerId);
+    localStorage.setItem('comparePlayers', JSON.stringify(updatedData));
+  }
+  
+  // Update compare button
+  updateCompareButton();
+}
+
+/**
+ * Update compare button visibility and count
+ */
+function updateCompareButton() {
+  const compareBtn = document.getElementById('compareBtn');
+  const compareCount = document.getElementById('compareCount');
+  
+  if (!compareBtn) return;
+  
+  const count = selectedPlayersForCompare.length;
+  
+  if (count > 0) {
+    compareBtn.classList.remove('hidden');
+    if (compareCount) {
+      compareCount.textContent = count;
+    }
+  } else {
+    compareBtn.classList.add('hidden');
+  }
+}
+
+/**
+ * Go to compare page
+ */
+window.goToCompare = function() {
+  if (selectedPlayersForCompare.length < 2) {
+    alert('Vui lòng chọn ít nhất 2 cầu thủ để so sánh!');
+    return;
+  }
+  
+  window.location.href = '/compare';
+};
+
+/**
+ * Clear compare selection
+ */
+window.clearCompareSelection = function() {
+  selectedPlayersForCompare = [];
+  localStorage.removeItem('comparePlayers');
+  
+  // Uncheck all checkboxes
+  document.querySelectorAll('.compare-checkbox').forEach(cb => {
+    cb.checked = false;
+  });
+  
+  updateCompareButton();
+};
+
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  // Load selected players from localStorage
+  const savedPlayers = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
+  selectedPlayersForCompare = savedPlayers.map(p => p.playerId);
+  
+  init();
+  updateCompareButton();
+});

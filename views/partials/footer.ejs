@@ -1,0 +1,55 @@
+<!-- Footer -->
+<footer class="bg-white mt-12 border-t-4 border-primary">
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            <!-- About -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-3">FC Online Database</h3>
+                <p class="text-gray-600 text-sm">
+                    Hệ thống tra cứu thông tin cầu thủ FC Online với đầy đủ chỉ số, công cụ đào tạo và so sánh cầu thủ.
+                </p>
+            </div>
+            
+            <!-- Quick Links -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Liên kết nhanh</h3>
+                <ul class="space-y-2">
+                    <li>
+                        <a href="/" class="text-gray-600 hover:text-primary transition-colors text-sm">Trang chủ</a>
+                    </li>
+                    <li>
+                        <a href="/club-search" class="text-gray-600 hover:text-primary transition-colors text-sm">Tìm theo câu lạc bộ</a>
+                    </li>
+                    <li>
+                        <a href="/compare" class="text-gray-600 hover:text-primary transition-colors text-sm">So sánh cầu thủ</a>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Info -->
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-3">Thông tin</h3>
+                <p class="text-gray-600 text-sm mb-2">
+                    Dữ liệu được cập nhật từ automua.com
+                </p>
+                <p class="text-gray-500 text-xs">
+                    © 2026 FC Online Database. All rights reserved.
+                </p>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-200 pt-6 text-center">
+            <p class="text-gray-500 text-sm">
+                Made with ⚽ for FC Online community
+            </p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Mobile menu toggle
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('hidden');
+    });
+</script>
