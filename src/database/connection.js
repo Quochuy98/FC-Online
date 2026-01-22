@@ -27,12 +27,13 @@ async function connect() {
     
     // Create a MongoClient with a MongoClientOptions object to set the Stable API version
     // For MongoDB Atlas (mongodb+srv://), use ServerApiVersion
+    // Note: strict: false allows text indexes to be created
     // For local MongoDB, use legacy options
     const clientOptions = MONGODB_CONFIG.uri.startsWith('mongodb+srv://')
       ? {
           serverApi: {
             version: ServerApiVersion.v1,
-            strict: true,
+            strict: false, // Set to false to allow text index creation
             deprecationErrors: true,
           }
         }

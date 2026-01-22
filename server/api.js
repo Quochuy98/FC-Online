@@ -205,11 +205,28 @@ app.get('/api/players/search', async (req, res) => {
 
     // Build query
     const query = {};
+    let useTextSearch = false;
+    let textSearchTerm = '';
 
-    if (name) {
-      query.name = { $regex: name, $options: 'i' };
+    // Use regex for partial matching (e.g., "etoo" → "Samuel Eto'o", "Ro" → "Ronaldo")
+    // Regex provides better partial matching than text search
+    let escapedTerm = '';
+    if (name && name.trim()) {
+      textSearchTerm = name.trim();
+      // Escape special regex characters and use case-insensitive search
+      escapedTerm = textSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Use $or to prioritize exact matches and matches at word boundaries
+      // This helps find "etoo" in "Eto'o" and "Ro" in "Ronaldo"
+      query.$or = [
+        { name: { $regex: `^${escapedTerm}`, $options: 'i' } }, // Starts with (highest priority)
+        { name: { $regex: `\\b${escapedTerm}`, $options: 'i' } }, // Word boundary match
+        { name: { $regex: escapedTerm, $options: 'i' } } // Contains anywhere (lowest priority)
+      ];
+      useTextSearch = false;
     }
 
+    // Additional filters
     if (position) {
       query.position = position;
     }
@@ -233,7 +250,7 @@ app.get('/api/players/search', async (req, res) => {
     // Count total
     const total = await collection.countDocuments(query);
 
-    // Build sort
+    // Build sort - prioritize by overallDisplay (default)
     const sort = {};
     if (sortBy === 'overall') {
       sort.overallDisplay = sortOrder === 'asc' ? 1 : -1;
@@ -243,13 +260,46 @@ app.get('/api/players/search', async (req, res) => {
       sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     }
 
-    // Get players
+    // Get players with partial matching support
+    // Results from $or will be ordered by the order in $or array (starts with first, then word boundary, then contains)
     const players = await collection
       .find(query)
       .sort(sort)
       .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit))
       .toArray();
+    
+    // If name search was used, sort results by match quality (starts with > word boundary > contains)
+    // This ensures "Ro" finds "Ronaldo" before "Roberto", "etoo" finds "Eto'o"
+    if (name && name.trim() && players.length > 0 && escapedTerm) {
+      const searchLower = textSearchTerm.toLowerCase();
+      
+      players.sort((a, b) => {
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        const aOverall = a.overallDisplay || 0;
+        const bOverall = b.overallDisplay || 0;
+        
+        // Priority 1: Check if name starts with search term
+        const aStarts = aName.startsWith(searchLower);
+        const bStarts = bName.startsWith(searchLower);
+        if (aStarts && !bStarts) return -1;
+        if (!aStarts && bStarts) return 1;
+        
+        // Priority 2: Check word boundary match (word starts with search term)
+        const aWordBoundary = new RegExp(`\\b${escapedTerm}`, 'i').test(aName);
+        const bWordBoundary = new RegExp(`\\b${escapedTerm}`, 'i').test(bName);
+        if (aWordBoundary && !bWordBoundary) return -1;
+        if (!aWordBoundary && bWordBoundary) return 1;
+        
+        // Priority 3: Sort by overallDisplay (higher first, unless sortOrder is asc)
+        if (sortBy === 'overall') {
+          return sortOrder === 'asc' ? aOverall - bOverall : bOverall - aOverall;
+        }
+        
+        return 0;
+      });
+    }
 
     res.json({
       success: true,

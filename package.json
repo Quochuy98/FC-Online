@@ -13,6 +13,7 @@
     "crawl:all": "node src/index.js all",
     "server": "node server/api.js",
     "server:dev": "nodemon server/api.js",
+    "create-text-index": "node scripts/createTextIndex.js",
     "test:scraper": "node examples/testScraper.js",
     "quickstart": "node examples/quickStart.js",
     "example:query": "node examples/queryStatsExample.js"
