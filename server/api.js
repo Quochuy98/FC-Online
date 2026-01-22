@@ -64,7 +64,24 @@ app.get('/api/constants', (req, res) => {
   });
 });
 
-// Get position coefficients
+// Get all position coefficients
+app.get('/api/position-coefficients/all', (req, res) => {
+  try {
+    const positionCoefficients = require('../src/config/positionCoefficients.json');
+    res.json({
+      success: true,
+      data: positionCoefficients,
+    });
+  } catch (error) {
+    logger.error('Get all position coefficients error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get position coefficients',
+    });
+  }
+});
+
+// Get position coefficients by position
 app.get('/api/position-coefficients/:position', (req, res) => {
   try {
     const { position } = req.params;

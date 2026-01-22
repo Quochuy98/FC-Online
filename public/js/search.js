@@ -7,6 +7,7 @@ let currentPage = 1;
 let currentFilters = {};
 let constants = null;
 let selectedSeasons = []; // Array of selected seasons for multiple filter
+let positionCoefficients = null; // Position coefficients for stat display
 
 // DOM Elements
 const playerNameInput = document.getElementById('playerName');
@@ -28,8 +29,14 @@ const quickSeasonsDiv = document.getElementById('quickSeasons');
  */
 async function init() {
   try {
-    // Load constants
-    constants = await PlayerAPI.getConstants();
+    // Load constants and position coefficients in parallel
+    const [constantsData, coefficientsData] = await Promise.all([
+      PlayerAPI.getConstants(),
+      fetch('/api/position-coefficients/all').then(r => r.json()).catch(() => null)
+    ]);
+    
+    constants = constantsData;
+    positionCoefficients = coefficientsData?.data || null;
     
     // Populate filters
     populateFilters();
@@ -276,7 +283,7 @@ function displayResults(result) {
   // Display players
   if (data.length === 0) {
     playersGrid.innerHTML = `
-      <div class="col-span-full text-center py-16">
+      <div class="text-center py-16 bg-white rounded-xl border-2 border-gray-100">
         <p class="text-xl text-gray-500 mb-2">Không tìm thấy cầu thủ nào</p>
         <p class="text-gray-400 italic">Thử thay đổi bộ lọc</p>
       </div>
@@ -295,16 +302,71 @@ function displayResults(result) {
 }
 
 /**
- * Create player card
+ * Get top 3 stats by coefficient for a position
+ */
+function getTopStatsForPosition(position, playerStats) {
+  if (!positionCoefficients || !playerStats) {
+    // Fallback to default stats
+    return [
+      { key: 'speed', name: 'Tốc độ', value: playerStats?.speed?.value || 0 },
+      { key: 'finishing', name: 'Dứt điểm', value: playerStats?.finishing?.value || 0 },
+      { key: 'shortPassing', name: 'Chuyền ngắn', value: playerStats?.shortPassing?.value || 0 }
+    ];
+  }
+  
+  // Find coefficient key for this position
+  let coefficients = null;
+  
+  // Direct match
+  if (positionCoefficients[position]) {
+    coefficients = positionCoefficients[position];
+  } else {
+    // Search in grouped positions
+    for (const key of Object.keys(positionCoefficients)) {
+      if (key.includes('/')) {
+        const positions = key.split('/');
+        if (positions.includes(position)) {
+          coefficients = positionCoefficients[key];
+          break;
+        }
+      }
+    }
+  }
+  
+  if (!coefficients) {
+    // Fallback if position not found
+    return [
+      { key: 'speed', name: 'Tốc độ', value: playerStats?.speed?.value || 0 },
+      { key: 'finishing', name: 'Dứt điểm', value: playerStats?.finishing?.value || 0 },
+      { key: 'shortPassing', name: 'Chuyền ngắn', value: playerStats?.shortPassing?.value || 0 }
+    ];
+  }
+  
+  // Build array of stats with coefficients
+  const statsArray = [];
+  for (const [key, config] of Object.entries(coefficients)) {
+    if (playerStats[key]) {
+      statsArray.push({
+        key,
+        name: config.name,
+        coefficient: config.coefficient,
+        value: playerStats[key].value || 0
+      });
+    }
+  }
+  
+  // Sort by coefficient (high to low) and take top 3
+  statsArray.sort((a, b) => b.coefficient - a.coefficient);
+  return statsArray.slice(0, 3);
+}
+
+/**
+ * Create player list item
  */
 function createPlayerCard(player) {
   const card = document.createElement('div');
-  card.className = 'bg-white border-2 border-gray-100 rounded-xl p-5 hover:border-primary hover:-translate-y-1 hover:shadow-xl transition-all cursor-pointer';
+  card.className = 'bg-white border-2 border-gray-100 rounded-xl p-4 hover:border-primary hover:shadow-lg transition-all cursor-pointer';
   card.onclick = () => window.location.href = `/player.html?id=${player.playerId}`;
-  
-  const speed = player.stats?.speed?.value || 0;
-  const finishing = player.stats?.finishing?.value || 0;
-  const passing = player.stats?.shortPassing?.value || 0;
   
   // Use overallDisplay if available, otherwise extract from positions
   let overall = player.overallDisplay || 0;
@@ -315,35 +377,53 @@ function createPlayerCard(player) {
     }
   }
   
+  // Get salary from overallRating
+  const salary = player.overallRating || 0;
+  
+  // Get top 3 stats for this position
+  const topStats = getTopStatsForPosition(player.position, player.stats);
+  
+  // Build stats HTML
+  const statsHTML = topStats.map(stat => `
+    <div class="text-center min-w-[70px]">
+      <div class="text-xs text-gray-500 mb-1 truncate">${stat.name}</div>
+      <div class="text-base font-bold text-gray-800">${stat.value}</div>
+    </div>
+  `).join('');
+  
   card.innerHTML = `
-    <div class="flex items-center gap-4 mb-4">
+    <div class="flex items-center gap-4">
+      <!-- Avatar -->
       <img 
         src="${player.avatarUrl || '/images/default-player.png'}" 
         alt="${player.name}" 
-        class="w-20 h-20 rounded-full object-cover border-3 border-gray-100"
+        class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
         onerror="this.src='/images/default-player.png'"
       >
+      
+      <!-- Player Info -->
       <div class="flex-1 min-w-0">
-        <h3 class="text-lg font-semibold text-gray-800 mb-2 truncate">${player.name}</h3>
-        <div class="flex flex-wrap gap-2 items-center">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="text-lg font-bold text-gray-800 truncate">${player.name}</h3>
           <span class="season-badge bg-${player.season}" title="${player.season}"></span>
-          <span class="px-3 py-1 bg-primary text-white rounded-md text-sm font-semibold">${player.position}</span>
-          <span class="px-3 py-1 bg-amber-500 text-white rounded-md text-sm font-semibold">${overall}</span>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="px-2 py-1 bg-primary text-white rounded text-xs font-semibold">${player.position}</span>
+          <span class="px-2 py-1 bg-amber-500 text-white rounded text-xs font-semibold">OVR ${overall}</span>
+          <span class="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold">💰 ${salary}</span>
         </div>
       </div>
-    </div>
-    <div class="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
-      <div class="text-center">
-        <div class="text-xs text-gray-500 mb-1">Tốc độ</div>
-        <div class="text-lg font-bold text-gray-800">${speed}</div>
+      
+      <!-- Top 3 Stats -->
+      <div class="hidden sm:flex items-center gap-3 lg:gap-5">
+        ${statsHTML}
       </div>
-      <div class="text-center">
-        <div class="text-xs text-gray-500 mb-1">Dứt điểm</div>
-        <div class="text-lg font-bold text-gray-800">${finishing}</div>
-      </div>
-      <div class="text-center">
-        <div class="text-xs text-gray-500 mb-1">Chuyền</div>
-        <div class="text-lg font-bold text-gray-800">${passing}</div>
+      
+      <!-- Arrow Icon -->
+      <div class="hidden sm:block text-gray-400 flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
       </div>
     </div>
   `;

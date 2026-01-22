@@ -143,7 +143,25 @@ function displayPositions(player) {
 }
 
 /**
- * Render stats tabs based on player positions
+ * Available position groups for training
+ */
+const POSITION_GROUPS = [
+  'RW/LW',
+  'LS/ST/RS',
+  'LF/CF/RF',
+  'LAM/CAM/RAM',
+  'RM/LM',
+  'LCM/CM/RCM',
+  'LDM/CDM/RDM',
+  'LWB/RWB',
+  'CB',
+  'SW',
+  'LB/RB',
+  'GK'
+];
+
+/**
+ * Render stats tabs (only 2 tabs now)
  */
 async function renderStatsTabs(player) {
   if (!player.positions || !Array.isArray(player.positions) || player.positions.length === 0) {
@@ -152,34 +170,21 @@ async function renderStatsTabs(player) {
     return;
   }
   
-  // Create "Chỉ số chung" tab
-  const allTab = createTabButton('all', 'Chỉ số chung', true);
+  // Create 2 fixed tabs
   statsTabsNav.innerHTML = '';
+  
+  // Tab 1: "Chỉ số chung"
+  const allTab = createTabButton('all', 'Chỉ số chung', true);
   statsTabsNav.appendChild(allTab);
   
-  // Create tabs for each position
-  player.positions.forEach((pos, index) => {
-    // Extract rating by index (format: "122|121|120" → ratings[index])
-    let rating = '';
-    if (pos.rating && typeof pos.rating === 'string') {
-      const ratings = pos.rating.split('|');
-      rating = ratings[index] || ratings[0] || '';
-    } else if (typeof pos.rating === 'number') {
-      rating = pos.rating;
-    }
-    
-    const tab = createTabButton(
-      `pos-${index}`, 
-      `${pos.position} (${rating})`, 
-      false
-    );
-    statsTabsNav.appendChild(tab);
-  });
+  // Tab 2: "Đào tạo cầu thủ"
+  const trainingTab = createTabButton('training', 'Đào tạo cầu thủ', false);
+  statsTabsNav.appendChild(trainingTab);
   
   // Create tab contents
   statsTabsContent.innerHTML = '';
   
-  // "Chỉ số chung" content
+  // Tab 1 content: "Chỉ số chung"
   const allContent = document.createElement('div');
   allContent.id = 'allTab';
   allContent.className = 'stats-tab-content';
@@ -195,26 +200,306 @@ async function renderStatsTabs(player) {
   // Display all stats in "Chỉ số chung"
   displayAllStats(player.stats, 'allStatsTable');
   
-  // Position-specific contents
-  for (let i = 0; i < player.positions.length; i++) {
-    const pos = player.positions[i];
-    const content = document.createElement('div');
-    content.id = `pos-${i}Tab`;
-    content.className = 'stats-tab-content hidden';
-    content.innerHTML = `
-      <div class="text-center py-4">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p class="mt-2 text-gray-500">Đang tải chỉ số cho ${pos.position}...</p>
-      </div>
-    `;
-    statsTabsContent.appendChild(content);
-    
-    // Fetch and display position stats
-    fetchAndDisplayPositionStats(pos.position, player.stats, `pos-${i}Tab`);
-  }
+  // Tab 2 content: "Đào tạo cầu thủ"
+  const trainingContent = document.createElement('div');
+  trainingContent.id = 'trainingTab';
+  trainingContent.className = 'stats-tab-content hidden';
+  statsTabsContent.appendChild(trainingContent);
+  
+  // Render training tab with dropdown
+  renderTrainingTab(player);
   
   // Setup tab switching
   setupTabs();
+}
+
+/**
+ * Render training tab with position selector
+ */
+function renderTrainingTab(player) {
+  const trainingContent = document.getElementById('trainingTab');
+  if (!trainingContent) return;
+  
+  // Get first position group as default
+  const defaultPosition = POSITION_GROUPS[0];
+  
+  trainingContent.innerHTML = `
+    <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-300">
+      <label for="position-selector" class="block text-sm font-semibold text-gray-700 mb-3">
+        🎯 Chọn vị trí để đào tạo:
+      </label>
+      <select 
+        id="position-selector" 
+        onchange="window.onPositionChange()"
+        class="w-full px-4 py-3 text-base font-semibold text-blue-700 bg-white border-2 border-blue-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors"
+      >
+        ${POSITION_GROUPS.map(group => `
+          <option value="${group}">${group}</option>
+        `).join('')}
+      </select>
+      <p class="text-xs text-gray-600 mt-2 italic">
+        💡 Chỉ số và hệ số sẽ thay đổi theo vị trí bạn chọn
+      </p>
+    </div>
+    <div id="training-content">
+      <div class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p class="mt-2 text-gray-500">Đang tải chỉ số...</p>
+      </div>
+    </div>
+  `;
+  
+  // Load default position
+  loadTrainingPosition(defaultPosition, player.stats);
+}
+
+/**
+ * Handle position change in training tab
+ */
+window.onPositionChange = function() {
+  const select = document.getElementById('position-selector');
+  if (!select || !currentPlayer) return;
+  
+  const position = select.value;
+  loadTrainingPosition(position, currentPlayer.stats);
+};
+
+/**
+ * Load training position stats
+ */
+async function loadTrainingPosition(positionGroup, playerStats) {
+  const trainingContentDiv = document.getElementById('training-content');
+  if (!trainingContentDiv) return;
+  
+  // Show loading
+  trainingContentDiv.innerHTML = `
+    <div class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <p class="mt-2 text-gray-500">Đang tải chỉ số cho ${positionGroup}...</p>
+    </div>
+  `;
+  
+  try {
+    // Fetch coefficients for this position group
+    const response = await fetch(`/api/position-coefficients/${encodeURIComponent(positionGroup)}`);
+    const result = await response.json();
+    
+    if (!result.success) {
+      trainingContentDiv.innerHTML = `
+        <p class="text-center text-red-500 py-8">
+          Không tìm thấy hệ số cho vị trí ${positionGroup}
+        </p>
+      `;
+      return;
+    }
+    
+    const coefficients = result.data.coefficients;
+    const contentId = 'trainingTab';
+    
+    // Sort stats by coefficient (descending)
+    const statsWithCoef = [];
+    for (const [key, config] of Object.entries(coefficients)) {
+      if (playerStats[key]) {
+        statsWithCoef.push({
+          key,
+          stat: playerStats[key],
+          coefficient: config.coefficient,
+        });
+      }
+    }
+    
+    statsWithCoef.sort((a, b) => b.coefficient - a.coefficient);
+    
+    // Initialize training data for this position
+    if (!trainingData[contentId]) {
+      trainingData[contentId] = {
+        coefficients,
+        stats: {},
+        statTeamColors: {},
+        level: 0,
+        teamColor: 0,
+        upgradeLevel: 1,
+      };
+      statsWithCoef.forEach(s => {
+        trainingData[contentId].stats[s.key] = 0;
+        trainingData[contentId].statTeamColors[s.key] = 0;
+      });
+    } else {
+      // Update coefficients and reset stats if position changed
+      trainingData[contentId].coefficients = coefficients;
+      // Reset stats for new position
+      trainingData[contentId].stats = {};
+      trainingData[contentId].statTeamColors = {};
+      statsWithCoef.forEach(s => {
+        trainingData[contentId].stats[s.key] = 0;
+        trainingData[contentId].statTeamColors[s.key] = 0;
+      });
+    }
+    
+    // Render content
+    renderTrainingContent(positionGroup, statsWithCoef, contentId);
+    
+  } catch (error) {
+    console.error('Error loading training position:', error);
+    trainingContentDiv.innerHTML = `
+      <p class="text-center text-red-500 py-8">
+        Lỗi khi tải dữ liệu. Vui lòng thử lại!
+      </p>
+    `;
+  }
+}
+
+/**
+ * Render training content with buffs and stats table
+ */
+function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
+  const trainingContentDiv = document.getElementById('training-content');
+  if (!trainingContentDiv) return;
+  
+  trainingContentDiv.innerHTML = `
+    <!-- Compact Layout: Buffs + OVR side by side -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+      <!-- Left: Buffs Controls (2 columns) -->
+      <div class="lg:col-span-2">
+        <div class="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border-2 border-purple-300 h-full">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-sm font-semibold text-gray-700">⚡ Buffs & Enhancements</p>
+            <p class="text-xs text-purple-600 italic">Áp dụng cho tất cả chỉ số</p>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <!-- Upgrade Level -->
+            <div class="bg-white p-2 rounded-lg border border-yellow-300">
+              <label for="${contentId}-upgradeLevel-select" class="block text-xs font-semibold text-gray-600 mb-1">
+                ⭐ Cấp thẻ
+              </label>
+              <div class="flex items-center gap-2">
+                <div id="${contentId}-upgrade-icon" class="upgrade-icon upgrade-level-1" style="flex-shrink: 0;"></div>
+                <select 
+                  id="${contentId}-upgradeLevel-select" 
+                  onchange="updateUpgradeLevel('${contentId}')"
+                  class="flex-1 px-2 py-1 text-xs font-bold text-yellow-700 bg-white border-2 border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 cursor-pointer hover:border-yellow-400 transition-colors"
+                >
+                  <option value="1">+1 (+0)</option>
+                  <option value="2">+2 (+1)</option>
+                  <option value="3">+3 (+2)</option>
+                  <option value="4">+4 (+4)</option>
+                  <option value="5">+5 (+6)</option>
+                  <option value="6">+6 (+9)</option>
+                  <option value="7">+7 (+12)</option>
+                  <option value="8">+8 (+15)</option>
+                  <option value="9">+9 (+18)</option>
+                  <option value="10">+10 (+21)</option>
+                  <option value="11">+11 (+23)</option>
+                  <option value="12">+12 (+25)</option>
+                  <option value="13">+13 (+27)</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Level -->
+            <div class="bg-white p-2 rounded-lg border border-purple-200">
+              <label for="${contentId}-level-select" class="block text-xs font-semibold text-gray-600 mb-1">
+                🎚️ Level
+              </label>
+              <select 
+                id="${contentId}-level-select" 
+                onchange="updateBuffFromDropdown('${contentId}', 'level')"
+                class="w-full px-2 py-1 text-xs font-bold text-purple-700 bg-white border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer hover:border-purple-300 transition-colors"
+              >
+                <option value="0">+0</option>
+                <option value="1">+1</option>
+                <option value="2">+2</option>
+                <option value="3">+3</option>
+                <option value="4">+4</option>
+              </select>
+            </div>
+            
+            <!-- Team Color -->
+            <div class="bg-white p-2 rounded-lg border border-indigo-200">
+              <label for="${contentId}-teamColor-select" class="block text-xs font-semibold text-gray-600 mb-1">
+                🎨 Team Color
+              </label>
+              <select 
+                id="${contentId}-teamColor-select" 
+                onchange="updateBuffFromDropdown('${contentId}', 'teamColor')"
+                class="w-full px-2 py-1 text-xs font-bold text-indigo-700 bg-white border-2 border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer hover:border-indigo-300 transition-colors"
+              >
+                <option value="0">+0</option>
+                <option value="1">+1</option>
+                <option value="2">+2</option>
+                <option value="3">+3</option>
+                <option value="4">+4</option>
+                <option value="5">+5</option>
+                <option value="6">+6</option>
+                <option value="7">+7</option>
+                <option value="8">+8</option>
+                <option value="9">+9</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Training Info (inline) -->
+          <div class="mt-3 pt-3 border-t border-purple-200">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-purple-700">📋 Tối đa <strong>5 chỉ số</strong>, mỗi chỉ số <strong>+2</strong></span>
+              <span class="font-bold text-purple-900" id="stats-counter">
+                Đã đào tạo: <span class="text-red-600">0/5</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Right: OVR Display (1 column) -->
+      <div class="lg:col-span-1">
+        <div class="p-4 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-300 h-full flex flex-col justify-center text-center">
+          <p class="text-xs font-semibold text-gray-600 mb-2">💎 Overall Rating</p>
+          <div class="text-5xl font-bold text-amber-600 mb-2" id="${contentId}-ovr">0</div>
+          <div class="text-xs text-gray-600 space-y-1">
+            <div class="flex justify-center gap-4">
+              <span>Base: <strong id="${contentId}-base-ovr">0</strong></span>
+              <span class="text-green-600">Buff: <strong id="${contentId}-buff-ovr">0</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Position Group Info (compact) -->
+    <div class="mb-3 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200 flex items-center justify-between">
+      <span class="text-xs text-blue-800">
+        <span class="font-semibold">Vị trí:</span> ${positionGroup}
+      </span>
+      <span class="text-xs text-blue-600 italic">Sắp xếp theo hệ số (cao → thấp)</span>
+    </div>
+    
+    <!-- Stats Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600">Chỉ số</th>
+            <th class="py-2 px-3 text-center text-xs font-semibold text-gray-600">Giá trị</th>
+            <th class="py-2 px-3 text-center text-xs font-semibold text-gray-600">Đào tạo</th>
+            <th class="py-2 px-3 text-center text-xs font-semibold text-gray-600">Team Color</th>
+            <th class="py-2 px-3 text-center text-xs font-semibold text-gray-600">Hệ số</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100" id="${contentId}-table"></tbody>
+      </table>
+    </div>
+  `;
+  
+  // Render stats table
+  const tbody = document.getElementById(`${contentId}-table`);
+  if (tbody) {
+    renderStatsTableWithCoefficient(statsWithCoef, tbody, contentId);
+    
+    // Initial updates
+    updateAllTrainingButtons(contentId);
+    updateAllStatDisplays(contentId);
+    calculateAndDisplayOVR(contentId);
+  }
 }
 
 /**
