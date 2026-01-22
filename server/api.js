@@ -209,12 +209,16 @@ app.get('/api/players/search', async (req, res) => {
     let textSearchTerm = '';
 
     // Use regex for partial matching (e.g., "etoo" → "Samuel Eto'o", "Ro" → "Ronaldo")
-    // Regex provides better partial matching than text search
+    // Regex provides better partial matching than text search and allows skipping punctuation
     let escapedTerm = '';
     if (name && name.trim()) {
       textSearchTerm = name.trim();
-      // Escape special regex characters and use case-insensitive search
-      escapedTerm = textSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // Escape special regex characters and build a pattern that allows optional non-word chars between letters
+      // Example: "etoo" -> "e\\W*t\\W*o\\W*o" to match "Eto'o"
+      const chars = textSearchTerm
+        .split('')
+        .map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      escapedTerm = chars.join('\\W*');
       
       // Use $or to prioritize exact matches and matches at word boundaries
       // This helps find "etoo" in "Eto'o" and "Ro" in "Ronaldo"
