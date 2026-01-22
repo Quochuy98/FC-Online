@@ -2,7 +2,7 @@
  * MongoDB connection manager
  */
 
-const { MongoClient } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const logger = require('../utils/logger');
 const { MONGODB_CONFIG } = require('../config/constants');
 
@@ -21,10 +21,27 @@ async function connect() {
   try {
     logger.info('Connecting to MongoDB...');
     
-    client = new MongoClient(MONGODB_CONFIG.uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    if (!MONGODB_CONFIG.uri) {
+      throw new Error('MONGODB_URI is not configured. Please set it in your .env file.');
+    }
+    
+    // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+    // For MongoDB Atlas (mongodb+srv://), use ServerApiVersion
+    // For local MongoDB, use legacy options
+    const clientOptions = MONGODB_CONFIG.uri.startsWith('mongodb+srv://')
+      ? {
+          serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+          }
+        }
+      : {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        };
+    
+    client = new MongoClient(MONGODB_CONFIG.uri, clientOptions);
 
     await client.connect();
     db = client.db(MONGODB_CONFIG.dbName);

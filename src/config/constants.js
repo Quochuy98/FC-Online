@@ -2,6 +2,15 @@
  * Application constants
  */
 
+// Ensure dotenv is loaded before reading environment variables
+if (!process.env.MONGODB_URI && typeof require !== 'undefined') {
+  try {
+    require('dotenv').config();
+  } catch (e) {
+    // dotenv might already be loaded or not available
+  }
+}
+
 const BASE_URL = 'https://automua.com';
 
 const POSITIONS = [
@@ -50,6 +59,11 @@ const MONGODB_CONFIG = {
     players: process.env.PLAYERS_COLLECTION || 'players',
   },
 };
+
+// Validate MongoDB URI
+if (!MONGODB_CONFIG.uri || typeof MONGODB_CONFIG.uri !== 'string') {
+  throw new Error('MONGODB_URI is required. Please set it in your .env file or use default: mongodb://localhost:27017/fconline');
+}
 
 module.exports = {
   BASE_URL,
