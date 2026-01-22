@@ -45,6 +45,7 @@ const POSITIONS = [
   'LWB', 'RWB', 'LB', 'RB', 'CB', 'GK'
 ];
 
+// Full seasons list (used for crawl, etc.)
 const SEASONS = [
   'ICONTM', 'ICON', 'ICONTMB', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
   '25IM', '25IMF', 'LE', 'NO7', 'WB', 'GRU', 'BDO', 'BLD', 'PRM',
@@ -68,6 +69,19 @@ const SEASONS = [
   '22TG', '21TG', '24WL', '23WL', '22WL', '21WL', '20WL', '19WL',
   'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL'
 ];
+
+// Seasons to hide from search filters/UI (still exist in DB & crawl)
+const HIDDEN_UI_SEASONS = [
+  'JA', 'MCC', 'MCI', 'ICONM', 'PSG', 'RMFC', 'LA', 'TKL', 'TKI',
+  'THB', 'THL', 'VLA', 'HC', '12KH',
+  '20KL', '20KLB', '21KL', '21KLB', '22KL', '22KLB', '23KL', '23KLB',
+  '24KL', '24KLB', '25KL', 'K18', 'K19', 'K21', 'K22', 'K23',
+  '22TG', '21TG', '24WL', '23WL', '22WL', '21WL', '20WL', '19WL',
+  'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL'
+];
+
+// Seasons visible in search filters & UI
+const VISIBLE_SEASONS = SEASONS.filter((s) => !HIDDEN_UI_SEASONS.includes(s));
 
 /**
  * Page Routes (EJS Views)
@@ -111,7 +125,8 @@ app.get('/api/health', (req, res) => {
 app.get('/api/constants', (req, res) => {
   res.json({
     positions: POSITIONS,
-    seasons: SEASONS,
+    // Use filtered list so hidden seasons (JA, MCC, ...) don't appear in filters
+    seasons: VISIBLE_SEASONS,
   });
 });
 
