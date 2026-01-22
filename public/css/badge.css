@@ -1,0 +1,1013 @@
+.season-badge {
+    background-image: url(https://i.automua.com/fo4/spritesheet16012026.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.bg-12KH {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -1px;
+}
+
+.bg-17 {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -1px;
+}
+
+.bg-18 {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -1px;
+}
+
+.bg-18A {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -1px;
+}
+
+.bg-18S {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -1px;
+}
+
+.bg-18TY {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -1px;
+}
+
+.bg-19 {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -1px;
+}
+
+.bg-19A {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -1px;
+}
+
+.bg-19NG {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -1px;
+}
+
+.bg-19S {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -1px;
+}
+
+.bg-19TS {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -1px;
+}
+
+.bg-19TY {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -27px;
+}
+
+.bg-19UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -27px;
+}
+
+.bg-19WL {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -27px;
+}
+
+.bg-20 {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -27px;
+}
+
+.bg-20A {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -27px;
+}
+
+.bg-20KL {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -27px;
+}
+
+.bg-20KLB {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -27px;
+}
+
+.bg-20NG {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -27px;
+}
+
+.bg-20TS {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -27px;
+}
+
+.bg-20TY {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -27px;
+}
+
+.bg-20TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -27px;
+}
+
+.bg-20UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -53px;
+}
+
+.bg-20WL {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -53px;
+}
+
+.bg-21 {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -53px;
+}
+
+.bg-21KL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -53px;
+}
+
+.bg-21KLB {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -53px;
+}
+
+.bg-21NG {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -53px;
+}
+
+.bg-21PL {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -53px;
+}
+
+.bg-21TG {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -53px;
+}
+
+.bg-21TS {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -53px;
+}
+
+.bg-21TY {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -53px;
+}
+
+.bg-21TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -53px;
+}
+
+.bg-21UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -79px;
+}
+
+.bg-21WL {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -79px;
+}
+
+.bg-22 {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -79px;
+}
+
+.bg-22HR {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -79px;
+}
+
+.bg-22KL {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -79px;
+}
+
+.bg-22KLB {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -79px;
+}
+
+.bg-22NG {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -79px;
+}
+
+.bg-22PL {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -79px;
+}
+
+.bg-22TG {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -79px;
+}
+
+.bg-22TS {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -79px;
+}
+
+.bg-22TY {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -79px;
+}
+
+.bg-22TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -105px;
+}
+
+.bg-22UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -105px;
+}
+
+.bg-22VB {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -105px;
+}
+
+.bg-22WL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -105px;
+}
+
+.bg-23 {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -105px;
+}
+
+.bg-23HR {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -105px;
+}
+
+.bg-23HW {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -105px;
+}
+
+.bg-23KL {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -105px;
+}
+
+.bg-23KLB {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -105px;
+}
+
+.bg-23NG {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -105px;
+}
+
+.bg-23PL {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -105px;
+}
+
+.bg-23TS {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -131px;
+}
+
+.bg-23TY {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -131px;
+}
+
+.bg-23TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -131px;
+}
+
+.bg-23UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -131px;
+}
+
+.bg-23VB {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -131px;
+}
+
+.bg-23WL {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -131px;
+}
+
+.bg-24 {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -131px;
+}
+
+.bg-24EP {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -131px;
+}
+
+.bg-24HR {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -131px;
+}
+
+.bg-24KL {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -131px;
+}
+
+.bg-24KLB {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -131px;
+}
+
+.bg-24PL {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -157px;
+}
+
+.bg-24TS {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -157px;
+}
+
+.bg-24TY {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -157px;
+}
+
+.bg-24TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -157px;
+}
+
+.bg-24UCL {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -157px;
+}
+
+.bg-24VB {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -157px;
+}
+
+.bg-24WL {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -157px;
+}
+
+.bg-25 {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -157px;
+}
+
+.bg-25CSL {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -157px;
+}
+
+.bg-25DP {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -157px;
+}
+
+.bg-25HR {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -157px;
+}
+
+.bg-25IM {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -183px;
+}
+
+.bg-25IMF {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -183px;
+}
+
+.bg-25KL {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -183px;
+}
+
+.bg-25PL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -183px;
+}
+
+.bg-25TS {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -183px;
+}
+
+.bg-25TY {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -183px;
+}
+
+.bg-25TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -183px;
+}
+
+.bg-25VB {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -183px;
+}
+
+.bg-26TY {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -183px;
+}
+
+.bg-26TYN {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -183px;
+}
+
+.bg-BDO {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -183px;
+}
+
+.bg-BLD {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -209px;
+}
+
+.bg-BOE {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -209px;
+}
+
+.bg-BOE21 {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -209px;
+}
+
+.bg-BTB {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -209px;
+}
+
+.bg-BWC {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -209px;
+}
+
+.bg-CAP {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -209px;
+}
+
+.bg-CC {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -209px;
+}
+
+.bg-CFA {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -209px;
+}
+
+.bg-CH {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -209px;
+}
+
+.bg-COC {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -209px;
+}
+
+.bg-CU {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -209px;
+}
+
+.bg-DC {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -235px;
+}
+
+.bg-DCB {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -235px;
+}
+
+.bg-DYL {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -235px;
+}
+
+.bg-EBS {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -235px;
+}
+
+.bg-EL {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -235px;
+}
+
+.bg-EU24 {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -235px;
+}
+
+.bg-FA {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -235px;
+}
+
+.bg-FAC {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -235px;
+}
+
+.bg-FC {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -235px;
+}
+
+.bg-FLG {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -235px;
+}
+
+.bg-FSL {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -235px;
+}
+
+.bg-GR {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -261px;
+}
+
+.bg-GRU {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -261px;
+}
+
+.bg-HC {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -261px;
+}
+
+.bg-HG {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -261px;
+}
+
+.bg-HOT {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -261px;
+}
+
+.bg-ICON {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -261px;
+}
+
+.bg-ICONM {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -261px;
+}
+
+.bg-ICONTM {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -261px;
+}
+
+.bg-ICONTMB {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -261px;
+}
+
+.bg-JA {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -261px;
+}
+
+.bg-JNM {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -261px;
+}
+
+.bg-K18 {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -287px;
+}
+
+.bg-K19 {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -287px;
+}
+
+.bg-K21 {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -287px;
+}
+
+.bg-K22 {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -287px;
+}
+
+.bg-K23 {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -287px;
+}
+
+.bg-LA {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -287px;
+}
+
+.bg-LD {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -287px;
+}
+
+.bg-LE {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -287px;
+}
+
+.bg-LH {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -287px;
+}
+
+.bg-LN {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -287px;
+}
+
+.bg-LOL {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -287px;
+}
+
+.bg-MC {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -313px;
+}
+
+.bg-MCC {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -313px;
+}
+
+.bg-MCI {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -313px;
+}
+
+.bg-MDL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -313px;
+}
+
+.bg-MLS {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -313px;
+}
+
+.bg-MOG {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -313px;
+}
+
+.bg-NHD {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -313px;
+}
+
+.bg-NO7 {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -313px;
+}
+
+.bg-NTG {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -313px;
+}
+
+.bg-OTW {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -313px;
+}
+
+.bg-PRM {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -313px;
+}
+
+.bg-PSG {
+    width: 30px;
+    height: 24px;
+    background-position: -1px -339px;
+}
+
+.bg-RMFC {
+    width: 30px;
+    height: 24px;
+    background-position: -33px -339px;
+}
+
+.bg-RTN {
+    width: 30px;
+    height: 24px;
+    background-position: -65px -339px;
+}
+
+.bg-RYL {
+    width: 30px;
+    height: 24px;
+    background-position: -97px -339px;
+}
+
+.bg-SPL {
+    width: 30px;
+    height: 24px;
+    background-position: -129px -339px;
+}
+
+.bg-SYL {
+    width: 30px;
+    height: 24px;
+    background-position: -161px -339px;
+}
+
+.bg-TB {
+    width: 30px;
+    height: 24px;
+    background-position: -193px -339px;
+}
+
+.bg-TC {
+    width: 30px;
+    height: 24px;
+    background-position: -225px -339px;
+}
+
+.bg-THB {
+    width: 30px;
+    height: 24px;
+    background-position: -257px -339px;
+}
+
+.bg-THL {
+    width: 30px;
+    height: 24px;
+    background-position: -289px -339px;
+}
+
+.bg-TK {
+    width: 30px;
+    height: 24px;
+    background-position: -321px -339px;
+}
+
+.bg-TKI {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -1px;
+}
+
+.bg-TKL {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -27px;
+}
+
+.bg-TT {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -53px;
+}
+
+.bg-TYL {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -79px;
+}
+
+.bg-UP {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -105px;
+}
+
+.bg-UT {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -131px;
+}
+
+.bg-VFG {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -157px;
+}
+
+.bg-VLA {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -183px;
+}
+
+.bg-VN {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -209px;
+}
+
+.bg-VNL {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -235px;
+}
+
+.bg-VTR {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -261px;
+}
+
+.bg-WB {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -287px;
+}
+
+.bg-WC22 {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -313px;
+}
+
+.bg-WS {
+    width: 30px;
+    height: 24px;
+    background-position: -353px -339px;
+}

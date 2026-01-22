@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Details - FC Online</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Badge CSS for season sprites -->
+    <link rel="stylesheet" href="/css/badge.css">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Table styling */
+        #mainStatsTable tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        #mainStatsTable tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-primary to-secondary min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+        <!-- Header -->
+        <header class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+            <div class="flex items-center gap-5">
+                <a 
+                    href="/" 
+                    class="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 hover:-translate-x-1 transition-all inline-block"
+                >
+                    ← Quay lại tìm kiếm
+                </a>
+                <h1 class="text-3xl font-bold text-gray-800">Chi tiết cầu thủ</h1>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-xl">
+            <div class="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-5"></div>
+            <p class="text-gray-600 text-lg">Đang tải thông tin...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="hidden text-center py-20 bg-white rounded-2xl shadow-xl"></div>
+
+        <!-- Player Details -->
+        <div id="playerDetails" class="hidden space-y-6">
+            <!-- Player Header -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                    <img 
+                        id="playerAvatar" 
+                        src="" 
+                        alt="Player Avatar" 
+                        class="w-40 h-40 rounded-full object-cover border-4 border-gray-100"
+                    >
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 id="playerName" class="text-4xl font-bold text-gray-800 mb-4"></h2>
+                        <div class="flex flex-wrap justify-center md:justify-start items-center gap-3 mb-5">
+                            <span id="playerSeasonBadge" class="season-badge transform scale-150"></span>
+                        </div>
+                        
+                        <!-- All Positions & Ratings -->
+                        <div class="mt-4">
+                            <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">Vị trí & Chỉ số</h4>
+                            <div id="playerPositions" class="flex flex-wrap gap-2">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h3 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-100">
+                    📊 Chỉ số
+                </h3>
+                
+                <!-- Tabs -->
+                <div class="mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex flex-wrap -mb-px gap-2" id="statsTabs">
+                            <!-- Will be populated by JavaScript -->
+                        </nav>
+                    </div>
+                </div>
+                
+                <!-- Tab Content Container -->
+                <div id="statsTabsContent">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Hidden Stats -->
+            <div id="hiddenStatsSection" class="hidden bg-white rounded-2xl shadow-xl p-8">
+                <h3 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-100">
+                    🔒 Chỉ số ẩn / Đặc điểm
+                </h3>
+                <div id="hiddenStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Club Career -->
+            <div id="clubCareerSection" class="hidden bg-white rounded-2xl shadow-xl p-6">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
+                    🏆 Sự nghiệp câu lạc bộ
+                </h3>
+                <div id="clubCareer">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Stats Radar Chart (Optional - future enhancement) -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h3 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-100">
+                    📈 Biểu đồ chỉ số
+                </h3>
+                <div id="statsRadar" class="text-center py-10">
+                    <p class="text-gray-400 italic">Biểu đồ sẽ được cập nhật sau</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/player-detail.js"></script>
+</body>
+</html>

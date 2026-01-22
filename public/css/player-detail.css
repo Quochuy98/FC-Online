@@ -1,0 +1,268 @@
+/* Player Detail Page Styles */
+
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-back {
+    background: #667eea;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-block;
+}
+
+.btn-back:hover {
+    background: #5568d3;
+    transform: translateX(-3px);
+}
+
+/* Player Header */
+.player-header {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.player-header .player-card {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    border: none;
+    padding: 0;
+}
+
+.player-header .player-avatar {
+    width: 150px;
+    height: 150px;
+    border: 5px solid #f0f0f0;
+}
+
+.player-info h2 {
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.player-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.player-meta .season-badge {
+    transform: scale(1.5);
+    margin-right: 10px;
+}
+
+.player-meta .position-badge,
+.player-meta .overall-badge {
+    font-size: 1.2em;
+    padding: 8px 16px;
+}
+
+.player-details-meta {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.player-details-meta p {
+    margin: 5px 0;
+}
+
+.player-details-meta a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.player-details-meta a:hover {
+    text-decoration: underline;
+}
+
+/* Stats Section */
+.stats-section,
+.hidden-stats-section,
+.club-career-section,
+.stats-radar-section {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.stats-section h3,
+.hidden-stats-section h3,
+.club-career-section h3,
+.stats-radar-section h3 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #f0f0f0;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.stat-name {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value-group {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.stat-current {
+    font-size: 2em;
+    font-weight: 700;
+    color: #333;
+}
+
+.stat-base {
+    font-size: 1.2em;
+    color: #999;
+}
+
+.stat-original {
+    font-size: 0.9em;
+    color: #666;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 2px 8px;
+    border-radius: 5px;
+}
+
+/* Stat Color Coding */
+.stat-card.stat-high {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.stat-card.stat-high .stat-current {
+    color: #27ae60;
+}
+
+.stat-card.stat-medium {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.stat-card.stat-low {
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+}
+
+/* Club Career */
+.club-career-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.club-item {
+    background: #f5f7fa;
+    padding: 20px;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+    transition: all 0.3s;
+}
+
+.club-item:hover {
+    background: #eef2f7;
+    transform: translateX(5px);
+}
+
+.club-name {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.club-meta {
+    color: #666;
+    font-size: 0.95em;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.empty-state p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .player-header .player-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .player-info h2 {
+        font-size: 2em;
+    }
+
+    .player-meta {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .stat-current {
+        font-size: 1.5em;
+    }
+}
+
+/* Loading Skeleton */
+.skeleton {
+    animation: skeleton-loading 1s linear infinite alternate;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        opacity: 0.6;
+    }
+    100% {
+        opacity: 1;
+    }
+}
