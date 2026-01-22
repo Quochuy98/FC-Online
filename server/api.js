@@ -257,7 +257,12 @@ app.get('/api/players/search', async (req, res) => {
         query.season = { $in: seasonArray };
       }
     } else if (season) {
+      // If user explicitly filters by a season, respect it (even if normally hidden)
       query.season = season;
+    } else {
+      // Default: hide seasons that should not appear in search results
+      // (JA, MCC, MCI, ICONM, PSG, RMFC, LA, TKL, TKI, THB, THL, VLA, HC, 12KH, ... EL)
+      query.season = { $nin: HIDDEN_UI_SEASONS };
     }
 
     if (minOverall || maxOverall) {
