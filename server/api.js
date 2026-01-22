@@ -20,6 +20,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+// Ensure MongoDB connection for serverless (Vercel)
+app.use(async (req, res, next) => {
+  try {
+    if (!getDatabase()) {
+      await connect();
+    }
+    next();
+  } catch (error) {
+    logger.error('MongoDB connection error in middleware', { error: error.message });
+    next(error);
+  }
+});
+
 // Constants
 const POSITIONS = [
   'ST', 'LW', 'RW', 'CF', 'CAM',

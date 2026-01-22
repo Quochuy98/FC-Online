@@ -57,12 +57,9 @@ async function connect() {
 
 /**
  * Get database instance
- * @returns {object} Database instance
+ * @returns {object|null} Database instance or null if not connected
  */
 function getDatabase() {
-  if (!db) {
-    throw new Error('Database not connected. Call connect() first.');
-  }
   return db;
 }
 
