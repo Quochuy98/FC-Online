@@ -122,7 +122,8 @@ app.get('/api/players/search', async (req, res) => {
     const {
       name,
       position,
-      season,
+      season,      // For backward compatibility (single season)
+      seasons,     // New: comma-separated list of seasons
       minOverall,
       maxOverall,
       page = 1,
@@ -145,7 +146,13 @@ app.get('/api/players/search', async (req, res) => {
       query.position = position;
     }
 
-    if (season) {
+    // Handle multiple seasons (comma-separated) or single season
+    if (seasons) {
+      const seasonArray = seasons.split(',').map(s => s.trim()).filter(s => s);
+      if (seasonArray.length > 0) {
+        query.season = { $in: seasonArray };
+      }
+    } else if (season) {
       query.season = season;
     }
 

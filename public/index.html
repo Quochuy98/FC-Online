@@ -33,6 +33,15 @@
         .animate-spin {
             animation: spin 1s linear infinite;
         }
+        
+        /* Smooth collapse animation */
+        #seasonsContainer {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        
+        #seasonArrow {
+            transition: transform 0.2s ease;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-primary to-secondary min-h-screen">
@@ -68,7 +77,7 @@
             </div>
 
             <!-- Filters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                 <!-- Position Filter -->
                 <div>
                     <label class="block font-semibold text-gray-700 mb-2">Vị trí:</label>
@@ -77,17 +86,6 @@
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
                     >
                         <option value="">Tất cả vị trí</option>
-                    </select>
-                </div>
-
-                <!-- Season Filter -->
-                <div>
-                    <label class="block font-semibold text-gray-700 mb-2">Mùa giải:</label>
-                    <select 
-                        id="seasonFilter"
-                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
-                    >
-                        <option value="">Tất cả mùa</option>
                     </select>
                 </div>
 
@@ -126,11 +124,28 @@
                 </span>
             </div>
 
-            <!-- Season Badges (Quick Filter) -->
+            <!-- Season Badges (Quick Filter - Collapsible) -->
             <div class="border-t-2 border-gray-100 pt-6">
-                <p class="font-semibold text-gray-700 mb-4">Tất cả mùa giải:</p>
-                <div class="flex flex-wrap gap-3" id="quickSeasons">
-                    <!-- Will be populated by JavaScript -->
+                <button 
+                    id="toggleSeasons"
+                    class="w-full flex items-center justify-between font-semibold text-gray-700 mb-4 hover:text-primary transition-colors"
+                    onclick="toggleSeasonsCollapse()"
+                >
+                    <span class="flex items-center gap-2">
+                        <svg id="seasonArrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        Mùa giải (cho phép chọn nhiều)
+                    </span>
+                    <span class="text-sm font-semibold text-primary" id="seasonsCount">0/0 mùa</span>
+                </button>
+                <div id="seasonsContainer" class="overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0;">
+                    <div class="flex flex-wrap gap-3 mb-3" id="quickSeasons">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <div class="text-xs text-gray-500 italic">
+                        💡 Click để chọn/bỏ chọn mùa. Có thể chọn nhiều mùa cùng lúc.
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,5 +181,35 @@
 
     <script src="/js/api.js"></script>
     <script src="/js/search.js"></script>
+    
+    <script>
+        // Toggle seasons collapse
+        let seasonsOpen = false;
+        
+        function toggleSeasonsCollapse() {
+            const container = document.getElementById('seasonsContainer');
+            const arrow = document.getElementById('seasonArrow');
+            
+            seasonsOpen = !seasonsOpen;
+            
+            if (seasonsOpen) {
+                // Open - auto height
+                container.style.maxHeight = container.scrollHeight + 'px';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                // Close
+                container.style.maxHeight = '0';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Auto-update max-height when content changes
+        function updateSeasonsHeight() {
+            const container = document.getElementById('seasonsContainer');
+            if (seasonsOpen && container) {
+                container.style.maxHeight = container.scrollHeight + 'px';
+            }
+        }
+    </script>
 </body>
 </html>

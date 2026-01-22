@@ -6,11 +6,11 @@
 let currentPage = 1;
 let currentFilters = {};
 let constants = null;
+let selectedSeasons = []; // Array of selected seasons for multiple filter
 
 // DOM Elements
 const playerNameInput = document.getElementById('playerName');
 const positionFilter = document.getElementById('positionFilter');
-const seasonFilter = document.getElementById('seasonFilter');
 const minOverallInput = document.getElementById('minOverall');
 const maxOverallInput = document.getElementById('maxOverall');
 const searchBtn = document.getElementById('searchBtn');
@@ -62,33 +62,6 @@ function populateFilters() {
     positionFilter.appendChild(option);
   });
   
-  // Seasons (show popular ones first)
-  const popularSeasons = ['ICONTM', 'ICON', 'ICONTMB', 'FAC', '25DP', 'FSL', 'WS', 'EL'];
-  const otherSeasons = constants.seasons.filter(s => !popularSeasons.includes(s));
-  
-  // Add popular seasons
-  const popularGroup = document.createElement('optgroup');
-  popularGroup.label = 'Mùa phổ biến';
-  popularSeasons.forEach(season => {
-    if (constants.seasons.includes(season)) {
-      const option = document.createElement('option');
-      option.value = season;
-      option.textContent = season;
-      popularGroup.appendChild(option);
-    }
-  });
-  seasonFilter.appendChild(popularGroup);
-  
-  // Add other seasons
-  const otherGroup = document.createElement('optgroup');
-  otherGroup.label = 'Mùa khác';
-  otherSeasons.forEach(season => {
-    const option = document.createElement('option');
-    option.value = season;
-    option.textContent = season;
-    otherGroup.appendChild(option);
-  });
-  seasonFilter.appendChild(otherGroup);
 }
 
 /**
@@ -110,31 +83,58 @@ function populateQuickSeasons() {
     
     quickSeasonsDiv.appendChild(wrapper);
   });
+  
+  // Update seasons counter
+  updateSeasonsCounter();
+  
+  // Update container height if needed
+  if (typeof updateSeasonsHeight === 'function') {
+    updateSeasonsHeight();
+  }
 }
 
 /**
- * Handle quick season click
+ * Handle quick season click (multiple selection)
  */
 function handleQuickSeasonClick(season, element) {
-  // Check if already active
-  const isActive = element.classList.contains('border-primary');
+  // Check if already selected
+  const isSelected = selectedSeasons.includes(season);
   
-  // Remove active state from all badges
-  quickSeasonsDiv.querySelectorAll('[data-season]').forEach(el => {
-    el.classList.remove('border-primary', 'bg-blue-50');
-  });
-  
-  // Toggle active state
-  if (!isActive) {
-    element.classList.add('border-primary', 'bg-blue-50');
-    seasonFilter.value = season;
+  if (isSelected) {
+    // Remove from selection
+    selectedSeasons = selectedSeasons.filter(s => s !== season);
+    element.classList.remove('border-primary', 'bg-blue-50');
   } else {
-    seasonFilter.value = '';
+    // Add to selection
+    selectedSeasons.push(season);
+    element.classList.add('border-primary', 'bg-blue-50');
   }
+  
+  // Update counter
+  updateSeasonsCounter();
   
   // Perform search
   currentPage = 1;
   performSearch();
+}
+
+/**
+ * Update seasons counter display
+ */
+function updateSeasonsCounter() {
+  const seasonsCount = document.getElementById('seasonsCount');
+  if (seasonsCount && constants) {
+    const total = constants.seasons.length;
+    const selected = selectedSeasons.length;
+    seasonsCount.textContent = `${selected}/${total} mùa`;
+    
+    // Change color if some selected
+    if (selected > 0) {
+      seasonsCount.className = 'text-sm font-bold text-primary';
+    } else {
+      seasonsCount.className = 'text-sm font-semibold text-primary';
+    }
+  }
 }
 
 /**
@@ -145,14 +145,20 @@ function loadUrlParams() {
   
   if (params.name) playerNameInput.value = params.name;
   if (params.position) positionFilter.value = params.position;
-  if (params.season) {
-    seasonFilter.value = params.season;
-    // Highlight quick season badge
-    const badge = quickSeasonsDiv.querySelector(`[data-season="${params.season}"]`);
-    if (badge) {
-      badge.classList.add('border-primary', 'bg-blue-50');
-    }
+  
+  // Handle multiple seasons (comma-separated)
+  if (params.seasons) {
+    selectedSeasons = params.seasons.split(',').filter(s => s.trim());
+    // Highlight all selected season badges
+    selectedSeasons.forEach(season => {
+      const badge = quickSeasonsDiv.querySelector(`[data-season="${season}"]`);
+      if (badge) {
+        badge.classList.add('border-primary', 'bg-blue-50');
+      }
+    });
+    updateSeasonsCounter();
   }
+  
   if (params.minOverall) minOverallInput.value = params.minOverall;
   if (params.maxOverall) maxOverallInput.value = params.maxOverall;
   if (params.page) currentPage = parseInt(params.page);
@@ -185,10 +191,10 @@ function setupEventListeners() {
     performSearch();
   }, 500);
   
-  [positionFilter, seasonFilter].forEach(el => {
-    el.addEventListener('change', debouncedSearch);
-  });
+  // Position filter change
+  positionFilter.addEventListener('change', debouncedSearch);
   
+  // Overall inputs
   [minOverallInput, maxOverallInput].forEach(el => {
     el.addEventListener('input', debouncedSearch);
   });
@@ -209,7 +215,6 @@ async function performSearch() {
     currentFilters = {
       name: playerNameInput.value.trim(),
       position: positionFilter.value,
-      season: seasonFilter.value,
       minOverall: minOverallInput.value,
       maxOverall: maxOverallInput.value,
       sortBy: 'overall',      // Always sort by overall
@@ -217,6 +222,11 @@ async function performSearch() {
       page: currentPage,
       limit: 20,
     };
+    
+    // Add multiple seasons as comma-separated string
+    if (selectedSeasons.length > 0) {
+      currentFilters.seasons = selectedSeasons.join(',');
+    }
     
     // Remove empty values (except sort params)
     Object.keys(currentFilters).forEach(key => {
@@ -439,14 +449,19 @@ function displayPagination(pagination) {
 function clearFilters() {
   playerNameInput.value = '';
   positionFilter.value = '';
-  seasonFilter.value = '';
   minOverallInput.value = '';
   maxOverallInput.value = '';
+  
+  // Clear selected seasons
+  selectedSeasons = [];
   
   // Clear quick season badges active state
   quickSeasonsDiv.querySelectorAll('[data-season]').forEach(el => {
     el.classList.remove('border-primary', 'bg-blue-50');
   });
+  
+  // Update counter
+  updateSeasonsCounter();
   
   currentPage = 1;
   performSearch();
