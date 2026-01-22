@@ -21,15 +21,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Ensure MongoDB connection for serverless (Vercel)
+// This middleware ensures DB is connected before handling requests
 app.use(async (req, res, next) => {
   try {
-    if (!getDatabase()) {
-      await connect();
+    let db = getDatabase();
+    if (!db) {
+      db = await connect();
     }
     next();
   } catch (error) {
     logger.error('MongoDB connection error in middleware', { error: error.message });
-    next(error);
+    res.status(500).json({
+      success: false,
+      error: 'Database connection failed',
+    });
   }
 });
 
