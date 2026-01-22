@@ -40,18 +40,18 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-primary to-secondary min-h-screen">
+<body class="bg-white min-h-screen">
     <%- include('../partials/header') %>
     
     <div class="container mx-auto px-4 py-6 max-w-7xl">
     <!-- Page Title -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 mb-6 text-center">
+    <div class="p-6 mb-6 text-center border-b border-gray-200">
         <h2 class="text-4xl font-bold text-primary mb-3">🎮 Tìm kiếm cầu thủ</h2>
         <p class="text-gray-600 text-lg">Tra cứu thông tin chi tiết cầu thủ FC Online</p>
     </div>
 
     <!-- Search Filters -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+    <div class="bg-gray-50 rounded-lg border border-gray-300 p-6 mb-6">
         <!-- Search Box -->
         <div class="flex flex-col sm:flex-row gap-3 mb-6">
             <input 
@@ -149,7 +149,7 @@
     </div>
 
     <!-- Results Section -->
-    <div class="bg-white rounded-2xl shadow-xl p-8">
+    <div class="bg-white rounded-lg border border-gray-300 p-6">
         <!-- Results Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b-2 border-gray-100">
             <h2 class="text-3xl font-bold text-gray-800">
@@ -165,7 +165,7 @@
         </div>
 
         <!-- Error State -->
-        <div id="error" class="hidden text-center py-16 text-red-500 bg-red-50 rounded-xl"></div>
+        <div id="error" class="hidden text-center py-16 text-red-500 bg-red-50 rounded-lg border border-red-200"></div>
 
         <!-- Results List -->
         <div id="playersGrid" class="space-y-3 mb-8">

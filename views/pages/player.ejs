@@ -42,12 +42,12 @@
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-primary to-secondary min-h-screen">
+<body class="bg-white min-h-screen">
     <%- include('../partials/header') %>
     
     <div class="container mx-auto px-4 py-6 max-w-7xl">
         <!-- Breadcrumb -->
-        <div class="bg-white rounded-2xl shadow-xl p-4 mb-6">
+        <div class="p-4 mb-6 border-b border-gray-200">
             <div class="flex items-center gap-3">
                 <a 
                     href="/" 
@@ -64,18 +64,18 @@
         </div>
 
         <!-- Loading State -->
-        <div id="loading" class="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-xl">
+        <div id="loading" class="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-gray-300">
             <div class="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-5"></div>
             <p class="text-gray-600 text-lg">Đang tải thông tin...</p>
         </div>
 
         <!-- Error State -->
-        <div id="error" class="hidden text-center py-20 bg-white rounded-2xl shadow-xl"></div>
+        <div id="error" class="hidden text-center py-20 bg-white rounded-lg border border-gray-300"></div>
 
         <!-- Player Details -->
         <div id="playerDetails" class="hidden space-y-6">
             <!-- Player Header -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="bg-white rounded-lg border border-gray-300 p-6">
                 <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
                     <img 
                         id="playerAvatar" 
@@ -101,7 +101,7 @@
             </div>
 
             <!-- Stats Section -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="bg-white rounded-lg border border-gray-300 p-6">
                 <h3 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-100">
                     📊 Chỉ số
                 </h3>
@@ -122,7 +122,7 @@
             </div>
 
             <!-- Hidden Stats -->
-            <div id="hiddenStatsSection" class="hidden bg-white rounded-2xl shadow-xl p-8">
+            <div id="hiddenStatsSection" class="hidden bg-white rounded-lg border border-gray-300 p-6">
                 <h3 class="text-3xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-100">
                     🔒 Chỉ số ẩn / Đặc điểm
                 </h3>
@@ -132,7 +132,7 @@
             </div>
 
             <!-- Club Career -->
-            <div id="clubCareerSection" class="hidden bg-white rounded-2xl shadow-xl p-6">
+            <div id="clubCareerSection" class="hidden bg-white rounded-lg border border-gray-300 p-6">
                 <h3 class="text-2xl font-bold text-gray-800 mb-4 pb-3 border-b border-gray-200">
                     🏆 Sự nghiệp câu lạc bộ
                 </h3>

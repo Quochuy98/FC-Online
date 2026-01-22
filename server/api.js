@@ -63,13 +63,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Club search page
-app.get('/club-search', (req, res) => {
-  res.render('pages/club-search', {
-    title: 'Tìm theo câu lạc bộ - FC Online',
-    currentPage: 'club-search'
-  });
-});
 
 // Player detail page
 app.get('/player', (req, res) => {

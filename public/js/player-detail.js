@@ -143,7 +143,7 @@ function displayPositions(player) {
 }
 
 /**
- * Available position groups for training
+ * Available position groups for training (must match positionCoefficients.json)
  */
 const POSITION_GROUPS = [
   'RW/LW',
@@ -406,11 +406,11 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
                 onchange="updateBuffFromDropdown('${contentId}', 'level')"
                 class="w-full px-2 py-1 text-xs font-bold text-purple-700 bg-white border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer hover:border-purple-300 transition-colors"
               >
-                <option value="0">+0</option>
-                <option value="1">+1</option>
-                <option value="2">+2</option>
-                <option value="3">+3</option>
-                <option value="4">+4</option>
+                <option value="0">1</option>
+                <option value="1">2</option>
+                <option value="2">3</option>
+                <option value="3">4</option>
+                <option value="4">5</option>
               </select>
             </div>
             
@@ -668,11 +668,11 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
               onchange="updateBuffFromDropdown('${contentId}', 'level')"
               class="w-full px-3 py-2 text-lg font-bold text-purple-600 bg-white border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer hover:border-purple-400 transition-colors"
             >
-              <option value="0">1 (+0)</option>
-              <option value="1">2 (+1)</option>
-              <option value="2">3 (+2)</option>
-              <option value="3">4 (+3)</option>
-              <option value="4">5 (+4)</option>
+              <option value="0">1</option>
+              <option value="1">2</option>
+              <option value="2">3</option>
+              <option value="3">4</option>
+              <option value="4">5</option>
             </select>
           </div>
           

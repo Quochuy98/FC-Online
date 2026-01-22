@@ -2,16 +2,18 @@
  * Compare Players Page Logic
  */
 
-// Available position groups
+// Available position groups (must match positionCoefficients.json)
 const POSITION_GROUPS = [
   'RW/LW',
   'LS/ST/RS',
+  'LF/CF/RF',
   'LAM/CAM/RAM',
+  'RM/LM',
   'LCM/CM/RCM',
   'LDM/CDM/RDM',
   'LWB/RWB',
-  'SW',
   'CB',
+  'SW',
   'LB/RB',
   'GK'
 ];
@@ -170,7 +172,7 @@ function createPlayerCard(player, playerCount = 4) {
     stat: isWideLayout ? 'text-sm' : 'text-xs'
   };
   
-  card.className = `bg-white rounded-xl shadow-lg ${cardPadding} border-2 border-gray-200`;
+  card.className = `bg-white rounded-lg ${cardPadding} border border-gray-300`;
   card.id = `player-${player.playerId}`;
   
   const overall = player.overallDisplay || 0;
@@ -215,7 +217,13 @@ function createPlayerCard(player, playerCount = 4) {
       
       <!-- Info -->
       <div class="flex-1 min-w-0">
-        <h3 class="font-bold text-base text-gray-800 truncate mb-1">${player.name}</h3>
+        <a 
+          href="/player?id=${player.playerId}" 
+          class="font-bold text-base text-gray-800 hover:text-primary truncate mb-1 block transition-colors cursor-pointer"
+          title="Xem chi tiết cầu thủ"
+        >
+          ${player.name}
+        </a>
         <div class="flex items-center gap-2 mb-1">
           <span class="season-badge bg-${player.season}" title="${player.season}"></span>
           <span class="px-2 py-0.5 bg-primary text-white rounded text-xs font-semibold">${player.position}</span>
@@ -226,7 +234,7 @@ function createPlayerCard(player, playerCount = 4) {
       </div>
       
       <!-- OVR Display -->
-      <div class="flex-shrink-0 text-center px-3 py-2 bg-gradient-to-br from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-300">
+      <div class="flex-shrink-0 text-center px-3 py-2 bg-gray-50 rounded-lg border border-gray-300">
         <p class="text-xs font-semibold text-gray-600">💎 OVR</p>
         <div class="text-3xl font-bold text-amber-600" id="ovr-${player.playerId}">
           ${ovrData.finalOVR}
@@ -238,40 +246,61 @@ function createPlayerCard(player, playerCount = 4) {
     </div>
     
     <!-- Buffs Controls (Compact) -->
-    <div class="mb-2 grid grid-cols-3 gap-2">
-      <!-- Upgrade Level -->
-      <select 
-        onchange="updateBuff('${player.playerId}', 'upgradeLevel', this.value)"
-        class="px-2 py-1 text-xs font-bold text-yellow-700 bg-white border-2 border-yellow-300 rounded focus:outline-none"
-      >
-        ${[1,2,3,4,5,6,7,8,9,10,11,12,13].map(lvl => 
-          `<option value="${lvl}" ${buffs.upgradeLevel === lvl ? 'selected' : ''}>⭐+${lvl}</option>`
-        ).join('')}
-      </select>
-      
-      <!-- Level -->
-      <select 
-        onchange="updateBuff('${player.playerId}', 'level', this.value)"
-        class="px-2 py-1 text-xs font-bold text-purple-700 bg-white border-2 border-purple-200 rounded focus:outline-none"
-      >
-        ${[0,1,2,3,4].map(lvl => 
-          `<option value="${lvl}" ${buffs.level === lvl ? 'selected' : ''}>🎚️+${lvl}</option>`
-        ).join('')}
-      </select>
-      
-      <!-- Team Color -->
-      <select 
-        onchange="updateBuff('${player.playerId}', 'teamColor', this.value)"
-        class="px-2 py-1 text-xs font-bold text-indigo-700 bg-white border-2 border-indigo-200 rounded focus:outline-none"
-      >
-        ${[0,1,2,3,4,5,6,7,8,9].map(tc => 
-          `<option value="${tc}" ${buffs.teamColor === tc ? 'selected' : ''}>🎨+${tc}</option>`
-        ).join('')}
-      </select>
+    <div class="mb-2">
+      <p class="text-xs font-semibold text-gray-600 mb-2">⚡ Buffs & Enhancements</p>
+      <div class="grid grid-cols-3 gap-2">
+        <!-- Upgrade Level -->
+        <div>
+          <label for="upgrade-${player.playerId}" class="block text-xs font-semibold text-gray-600 mb-1">
+            ⭐ Cấp thẻ
+          </label>
+          <select 
+            id="upgrade-${player.playerId}"
+            onchange="updateBuff('${player.playerId}', 'upgradeLevel', this.value)"
+            class="w-full px-2 py-1 text-xs font-bold text-yellow-700 bg-white border-2 border-yellow-300 rounded focus:outline-none"
+          >
+            ${[1,2,3,4,5,6,7,8,9,10,11,12,13].map(lvl => 
+              `<option value="${lvl}" ${buffs.upgradeLevel === lvl ? 'selected' : ''}>+${lvl} (+${UPGRADE_OVR_BONUS[lvl]} OVR)</option>`
+            ).join('')}
+          </select>
+        </div>
+        
+        <!-- Level -->
+        <div>
+          <label for="level-${player.playerId}" class="block text-xs font-semibold text-gray-600 mb-1">
+            🎚️ Level
+          </label>
+          <select 
+            id="level-${player.playerId}"
+            onchange="updateBuff('${player.playerId}', 'level', this.value)"
+            class="w-full px-2 py-1 text-xs font-bold text-purple-700 bg-white border-2 border-purple-200 rounded focus:outline-none"
+          >
+            ${[0,1,2,3,4].map(lvl => 
+              `<option value="${lvl}" ${buffs.level === lvl ? 'selected' : ''}>${lvl + 1}</option>`
+            ).join('')}
+          </select>
+        </div>
+        
+        <!-- Team Color -->
+        <div>
+          <label for="teamcolor-${player.playerId}" class="block text-xs font-semibold text-gray-600 mb-1">
+            🎨 Team Color
+          </label>
+          <select 
+            id="teamcolor-${player.playerId}"
+            onchange="updateBuff('${player.playerId}', 'teamColor', this.value)"
+            class="w-full px-2 py-1 text-xs font-bold text-indigo-700 bg-white border-2 border-indigo-200 rounded focus:outline-none"
+          >
+            ${[0,1,2,3,4,5,6,7,8,9].map(tc => 
+              `<option value="${tc}" ${buffs.teamColor === tc ? 'selected' : ''}>+${tc}</option>`
+            ).join('')}
+          </select>
+        </div>
+      </div>
     </div>
     
     <!-- Stats Table -->
-    <div class="overflow-y-auto" style="max-height: calc(100vh - 450px); min-height: 400px;">
+    <div>
       <table class="w-full ${textSizes.stat}">
         <thead class="bg-gray-50 sticky top-0">
           <tr>
