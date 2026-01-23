@@ -5,7 +5,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const { connect, getDatabase } = require('../src/database/connection');
+const { connect, isDatabaseConnected } = require('../src/database/connection');
+const { Player } = require('../src/database/playerRepository');
 const logger = require('../src/utils/logger');
 
 const app = express();
@@ -20,13 +21,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Ensure MongoDB connection for serverless (Vercel)
+// Ensure MongoDB connection for serverless (DigitalOcean)
 // This middleware ensures DB is connected before handling requests
 app.use(async (req, res, next) => {
   try {
-    let db = getDatabase();
-    if (!db) {
-      db = await connect();
+    if (!isDatabaseConnected()) {
+      await connect();
     }
     next();
   } catch (error) {
@@ -215,12 +215,8 @@ app.get('/api/players/search', async (req, res) => {
       sortOrder = 'desc',
     } = req.query;
 
-    const db = getDatabase();
-    const collection = db.collection('players');
-
     // Build query
     const query = {};
-    let useTextSearch = false;
     let textSearchTerm = '';
 
     // Use regex for partial matching (e.g., "etoo" → "Samuel Eto'o", "Ro" → "Ronaldo")
@@ -242,7 +238,6 @@ app.get('/api/players/search', async (req, res) => {
         { name: { $regex: `\\b${escapedTerm}`, $options: 'i' } }, // Word boundary match
         { name: { $regex: escapedTerm, $options: 'i' } } // Contains anywhere (lowest priority)
       ];
-      useTextSearch = false;
     }
 
     // Additional filters
@@ -271,9 +266,6 @@ app.get('/api/players/search', async (req, res) => {
       if (maxOverall) query.overallDisplay.$lte = parseInt(maxOverall);
     }
 
-    // Count total
-    const total = await collection.countDocuments(query);
-
     // Build sort - prioritize by overallDisplay (default)
     const sort = {};
     if (sortBy === 'overall') {
@@ -284,14 +276,17 @@ app.get('/api/players/search', async (req, res) => {
       sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
     }
 
+    // Count total
+    const total = await Player.countDocuments(query);
+
+
     // Get players with partial matching support
     // Results from $or will be ordered by the order in $or array (starts with first, then word boundary, then contains)
-    const players = await collection
-      .find(query)
+    const players = await Player.find(query)
       .sort(sort)
       .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit))
-      .toArray();
+      .lean(); // Use lean() for better performance (returns plain JS objects)
     
     // If name search was used, sort results by match quality (starts with > word boundary > contains)
     // This ensures "Ro" finds "Ronaldo" before "Roberto", "etoo" finds "Eto'o"
@@ -356,19 +351,15 @@ app.get('/api/players/by-club', async (req, res) => {
       });
     }
 
-    const db = getDatabase();
-    const collection = db.collection('players');
-
     // Search for players who have this club in their career history
     const query = {
       'clubCareer.club': { $regex: club, $options: 'i' }
     };
 
     // Get all matching players, sorted by overall rating
-    const players = await collection
-      .find(query)
+    const players = await Player.find(query)
       .sort({ overallDisplay: -1 })
-      .toArray();
+      .lean();
 
     logger.info('Club search completed', { 
       club, 
@@ -393,10 +384,7 @@ app.get('/api/players/by-club', async (req, res) => {
 app.get('/api/players/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const db = getDatabase();
-    const collection = db.collection('players');
-
-    const player = await collection.findOne({ playerId: id });
+    const player = await Player.findOne({ playerId: id }).lean();
 
     if (!player) {
       return res.status(404).json({
@@ -424,10 +412,7 @@ app.get('/api/players/:id/compare', async (req, res) => {
     const { id } = req.params;
     const { position, season } = req.query;
 
-    const db = getDatabase();
-    const collection = db.collection('players');
-
-    const player = await collection.findOne({ playerid: id });
+    const player = await Player.findOne({ playerId: id }).lean();
 
     if (!player) {
       return res.status(404).json({
@@ -439,7 +424,7 @@ app.get('/api/players/:id/compare', async (req, res) => {
     // Get similar players (same position, similar overall)
     const query = {
       position: position || player.position,
-      playerid: { $ne: id },
+      playerId: { $ne: id },
     };
 
     if (season) {
@@ -453,11 +438,10 @@ app.get('/api/players/:id/compare', async (req, res) => {
       $lte: overall + 5,
     };
 
-    const similarPlayers = await collection
-      .find(query)
+    const similarPlayers = await Player.find(query)
       .sort({ overallDisplay: -1 })
       .limit(10)
-      .toArray();
+      .lean();
 
     res.json({
       success: true,
@@ -479,8 +463,6 @@ app.get('/api/players/:id/compare', async (req, res) => {
 app.get('/api/stats/aggregate', async (req, res) => {
   try {
     const { groupBy = 'season' } = req.query;
-    const db = getDatabase();
-    const collection = db.collection('players');
 
     let pipeline = [];
 
@@ -510,7 +492,7 @@ app.get('/api/stats/aggregate', async (req, res) => {
       ];
     }
 
-    const stats = await collection.aggregate(pipeline).toArray();
+    const stats = await Player.aggregate(pipeline);
 
     res.json({
       success: true,
