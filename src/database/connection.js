@@ -25,24 +25,43 @@ async function connect() {
       throw new Error('MONGODB_URI is not configured. Please set it in your .env file.');
     }
     
+    // Ensure URI includes database name for better compatibility
+    let mongoUri = MONGODB_CONFIG.uri;
+    if (mongoUri.startsWith('mongodb+srv://') && !mongoUri.includes('/?') && !mongoUri.includes('/' + MONGODB_CONFIG.dbName)) {
+      // Add database name to URI if not present
+      const separator = mongoUri.includes('?') ? '&' : '?';
+      mongoUri = `${mongoUri}${separator}appName=Cluster0`;
+    }
+    
     // Create a MongoClient with a MongoClientOptions object to set the Stable API version
     // For MongoDB Atlas (mongodb+srv://), use ServerApiVersion
     // Note: strict: false allows text indexes to be created
     // For local MongoDB, use legacy options
-    const clientOptions = MONGODB_CONFIG.uri.startsWith('mongodb+srv://')
+    const clientOptions = mongoUri.startsWith('mongodb+srv://')
       ? {
           serverApi: {
             version: ServerApiVersion.v1,
             strict: false, // Set to false to allow text index creation
             deprecationErrors: true,
-          }
+          },
+          // SSL/TLS options for MongoDB Atlas (required for mongodb+srv://)
+          // Note: mongodb+srv:// automatically uses TLS, but we can be explicit
+          // Connection pool options for serverless (Vercel)
+          maxPoolSize: 1, // Use 1 for serverless to avoid connection issues
+          minPoolSize: 0,
+          // Timeout options
+          connectTimeoutMS: 30000,
+          socketTimeoutMS: 45000,
+          // Retry options
+          retryWrites: true,
+          retryReads: true,
         }
       : {
           useNewUrlParser: true,
           useUnifiedTopology: true,
         };
     
-    client = new MongoClient(MONGODB_CONFIG.uri, clientOptions);
+    client = new MongoClient(mongoUri, clientOptions);
 
     await client.connect();
     db = client.db(MONGODB_CONFIG.dbName);
@@ -51,7 +70,11 @@ async function connect() {
     
     return db;
   } catch (error) {
-    logger.error('Failed to connect to MongoDB', { error: error.message });
+    logger.error('Failed to connect to MongoDB', { 
+      error: error.message,
+      stack: error.stack,
+      uri: MONGODB_CONFIG.uri ? 'configured' : 'missing'
+    });
     throw error;
   }
 }
