@@ -29,9 +29,9 @@ const MAX_TRAINING_VALUE = 2; // Maximum training value per stat (+2)
 
 // Upgrade Level OVR Bonuses (based on FC Online upgrade system)
 const UPGRADE_OVR_BONUS = {
-  1: 0,   2: 1,   3: 2,   4: 4,   5: 6,
-  6: 9,   7: 12,  8: 15,  9: 18,  10: 21,
-  11: 23, 12: 25, 13: 27
+  1: 0, 2: 1, 3: 2, 4: 4, 5: 6,
+  6: 9, 7: 12, 8: 15, 9: 17, 10: 19,
+  11: 21, 12: 24, 13: 27
 };
 
 /**
@@ -54,19 +54,19 @@ async function init() {
     // Get player ID from URL
     const params = Utils.getUrlParams();
     const id = params.id;
-    
+
     if (!id) {
       showError('Không tìm thấy ID cầu thủ');
       return;
     }
-    
+
     // Fetch player data
     const result = await PlayerAPI.getPlayer(id);
     const player = result.data;
-    
+
     // Display player
     displayPlayer(player);
-    
+
     // Hide loading
     loadingDiv.classList.add('hidden');
     playerDetailsDiv.classList.remove('hidden');
@@ -82,23 +82,23 @@ async function init() {
  */
 async function displayPlayer(player) {
   currentPlayer = player;
-  
+
   // Header
   playerAvatar.src = player.avatarUrl || '/images/default-player.png';
   playerAvatar.onerror = () => playerAvatar.src = '/images/default-player.png';
   playerName.textContent = player.name;
   playerSeasonBadge.className = `season-badge bg-${player.season}`;
   playerSeasonBadge.title = player.season;
-  
+
   // Display all positions with ratings
   displayPositions(player);
-  
+
   // Render tabs and stats
   await renderStatsTabs(player);
-  
+
   // Hidden stats
   displayHiddenStats(player);
-  
+
   // Club career
   displayClubCareer(player);
 }
@@ -108,20 +108,20 @@ async function displayPlayer(player) {
  */
 function displayPositions(player) {
   playerPositionsDiv.innerHTML = '';
-  
+
   if (!player.positions || !Array.isArray(player.positions) || player.positions.length === 0) {
     playerPositionsDiv.innerHTML = '<span class="text-gray-400 text-sm">Không có thông tin vị trí</span>';
     return;
   }
-  
+
   player.positions.forEach((pos, index) => {
     const positionBadge = document.createElement('div');
-    
+
     // Primary position gets special styling
     const isPrimary = pos.position === player.position;
     const bgColor = isPrimary ? 'bg-primary' : 'bg-gray-600';
     const borderClass = isPrimary ? 'border-2 border-primary-dark' : '';
-    
+
     // Extract rating by index (format: "122|121|120" → ratings[index])
     let rating = '';
     if (pos.rating && typeof pos.rating === 'string') {
@@ -130,14 +130,14 @@ function displayPositions(player) {
     } else if (typeof pos.rating === 'number') {
       rating = pos.rating;
     }
-    
+
     positionBadge.className = `inline-flex items-center gap-2 px-3 py-2 ${bgColor} text-white rounded-lg text-sm font-semibold ${borderClass} transition-all hover:scale-105`;
-    
+
     positionBadge.innerHTML = `
       <span class="font-bold">${pos.position}</span>
       <span class="text-amber-300 font-bold">${rating}</span>
     `;
-    
+
     playerPositionsDiv.appendChild(positionBadge);
   });
 }
@@ -169,21 +169,21 @@ async function renderStatsTabs(player) {
     statsTabsContent.innerHTML = '';
     return;
   }
-  
+
   // Create 2 fixed tabs
   statsTabsNav.innerHTML = '';
-  
+
   // Tab 1: "Chỉ số chung"
   const allTab = createTabButton('all', 'Chỉ số chung', true);
   statsTabsNav.appendChild(allTab);
-  
+
   // Tab 2: "Đào tạo cầu thủ"
   const trainingTab = createTabButton('training', 'Đào tạo cầu thủ', false);
   statsTabsNav.appendChild(trainingTab);
-  
+
   // Create tab contents
   statsTabsContent.innerHTML = '';
-  
+
   // Tab 1 content: "Chỉ số chung"
   const allContent = document.createElement('div');
   allContent.id = 'allTab';
@@ -196,19 +196,19 @@ async function renderStatsTabs(player) {
     </div>
   `;
   statsTabsContent.appendChild(allContent);
-  
+
   // Display all stats in "Chỉ số chung"
   displayAllStats(player.stats, 'allStatsTable');
-  
+
   // Tab 2 content: "Đào tạo cầu thủ"
   const trainingContent = document.createElement('div');
   trainingContent.id = 'trainingTab';
   trainingContent.className = 'stats-tab-content hidden';
   statsTabsContent.appendChild(trainingContent);
-  
+
   // Render training tab with dropdown
   renderTrainingTab(player);
-  
+
   // Setup tab switching
   setupTabs();
 }
@@ -219,10 +219,10 @@ async function renderStatsTabs(player) {
 function renderTrainingTab(player) {
   const trainingContent = document.getElementById('trainingTab');
   if (!trainingContent) return;
-  
+
   // Get first position group as default
   const defaultPosition = POSITION_GROUPS[0];
-  
+
   trainingContent.innerHTML = `
     <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-300">
       <label for="position-selector" class="block text-sm font-semibold text-gray-700 mb-3">
@@ -248,7 +248,7 @@ function renderTrainingTab(player) {
       </div>
     </div>
   `;
-  
+
   // Load default position
   loadTrainingPosition(defaultPosition, player.stats);
 }
@@ -256,10 +256,10 @@ function renderTrainingTab(player) {
 /**
  * Handle position change in training tab
  */
-window.onPositionChange = function() {
+window.onPositionChange = function () {
   const select = document.getElementById('position-selector');
   if (!select || !currentPlayer) return;
-  
+
   const position = select.value;
   loadTrainingPosition(position, currentPlayer.stats);
 };
@@ -270,7 +270,7 @@ window.onPositionChange = function() {
 async function loadTrainingPosition(positionGroup, playerStats) {
   const trainingContentDiv = document.getElementById('training-content');
   if (!trainingContentDiv) return;
-  
+
   // Show loading
   trainingContentDiv.innerHTML = `
     <div class="text-center py-8">
@@ -278,12 +278,12 @@ async function loadTrainingPosition(positionGroup, playerStats) {
       <p class="mt-2 text-gray-500">Đang tải chỉ số cho ${positionGroup}...</p>
     </div>
   `;
-  
+
   try {
     // Fetch coefficients for this position group
     const response = await fetch(`/api/position-coefficients/${encodeURIComponent(positionGroup)}`);
     const result = await response.json();
-    
+
     if (!result.success) {
       trainingContentDiv.innerHTML = `
         <p class="text-center text-red-500 py-8">
@@ -292,10 +292,10 @@ async function loadTrainingPosition(positionGroup, playerStats) {
       `;
       return;
     }
-    
+
     const coefficients = result.data.coefficients;
     const contentId = 'trainingTab';
-    
+
     // Sort stats by coefficient (descending)
     const statsWithCoef = [];
     for (const [key, config] of Object.entries(coefficients)) {
@@ -307,9 +307,9 @@ async function loadTrainingPosition(positionGroup, playerStats) {
         });
       }
     }
-    
+
     statsWithCoef.sort((a, b) => b.coefficient - a.coefficient);
-    
+
     // Initialize training data for this position
     if (!trainingData[contentId]) {
       trainingData[contentId] = {
@@ -335,10 +335,10 @@ async function loadTrainingPosition(positionGroup, playerStats) {
         trainingData[contentId].statTeamColors[s.key] = 0;
       });
     }
-    
+
     // Render content
     renderTrainingContent(positionGroup, statsWithCoef, contentId);
-    
+
   } catch (error) {
     console.error('Error loading training position:', error);
     trainingContentDiv.innerHTML = `
@@ -355,7 +355,7 @@ async function loadTrainingPosition(positionGroup, playerStats) {
 function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
   const trainingContentDiv = document.getElementById('training-content');
   if (!trainingContentDiv) return;
-  
+
   trainingContentDiv.innerHTML = `
     <!-- Compact Layout: Buffs + OVR side by side -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
@@ -387,10 +387,10 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
                   <option value="6">+6 (+9)</option>
                   <option value="7">+7 (+12)</option>
                   <option value="8">+8 (+15)</option>
-                  <option value="9">+9 (+18)</option>
-                  <option value="10">+10 (+21)</option>
-                  <option value="11">+11 (+23)</option>
-                  <option value="12">+12 (+25)</option>
+                  <option value="9">+9 (+17)</option>
+                  <option value="10">+10 (+19)</option>
+                  <option value="11">+11 (+21)</option>
+                  <option value="12">+12 (+24)</option>
                   <option value="13">+13 (+27)</option>
                 </select>
               </div>
@@ -489,12 +489,12 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
       </table>
     </div>
   `;
-  
+
   // Render stats table
   const tbody = document.getElementById(`${contentId}-table`);
   if (tbody) {
     renderStatsTableWithCoefficient(statsWithCoef, tbody, contentId);
-    
+
     // Initial updates
     updateAllTrainingButtons(contentId);
     updateAllStatDisplays(contentId);
@@ -508,11 +508,10 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
 function createTabButton(tabId, label, isActive) {
   const button = document.createElement('button');
   button.dataset.tab = tabId;
-  button.className = `stats-tab py-4 px-4 border-b-2 font-semibold transition-colors ${
-    isActive 
-      ? 'border-primary text-primary' 
-      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-  }`;
+  button.className = `stats-tab py-4 px-4 border-b-2 font-semibold transition-colors ${isActive
+    ? 'border-primary text-primary'
+    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+    }`;
   button.textContent = label;
   return button;
 }
@@ -523,9 +522,9 @@ function createTabButton(tabId, label, isActive) {
 function displayAllStats(stats, tableId) {
   const tbody = document.getElementById(tableId);
   if (!tbody) return;
-  
+
   tbody.innerHTML = '';
-  
+
   if (!stats) {
     tbody.innerHTML = `
       <tr>
@@ -536,26 +535,26 @@ function displayAllStats(stats, tableId) {
     `;
     return;
   }
-  
+
   const statsOrder = [
-    'speed', 'acceleration', 'finishing', 'shotPower', 
+    'speed', 'acceleration', 'finishing', 'shotPower',
     'longShots', 'positioning', 'volleys', 'penalties',
     'shortPassing', 'vision', 'crossing', 'longPassing',
     'freeKickAccuracy', 'curve', 'dribbling', 'ballControl',
-    'agility', 'balance', 'reactions', 'marking', 
+    'agility', 'balance', 'reactions', 'marking',
     'standingTackle', 'interceptions', 'slidingTackle',
     'heading', 'strength', 'stamina', 'aggression',
     'jumping', 'composure', 'gkDiving', 'gkHandling',
     'gkKicking', 'gkReflexes', 'gkPositioning'
   ];
-  
+
   const statsToDisplay = [];
   for (const key of statsOrder) {
     if (stats[key]) {
       statsToDisplay.push({ key, stat: stats[key] });
     }
   }
-  
+
   renderStatsTable(statsToDisplay, tbody);
 }
 
@@ -566,10 +565,10 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
   try {
     const response = await fetch(`/api/position-coefficients/${position}`);
     const result = await response.json();
-    
+
     const content = document.getElementById(contentId);
     if (!content) return;
-    
+
     if (!result.success) {
       content.innerHTML = `
         <p class="text-center text-red-500 py-8">
@@ -578,9 +577,9 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
       `;
       return;
     }
-    
+
     const coefficients = result.data.coefficients;
-    
+
     // Sort stats by coefficient (descending)
     const statsWithCoef = [];
     for (const [key, config] of Object.entries(coefficients)) {
@@ -592,9 +591,9 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
         });
       }
     }
-    
+
     statsWithCoef.sort((a, b) => b.coefficient - a.coefficient);
-    
+
     // Initialize training data for this position
     if (!trainingData[contentId]) {
       trainingData[contentId] = {
@@ -610,7 +609,7 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
         trainingData[contentId].statTeamColors[s.key] = 0;  // Initialize to 0
       });
     }
-    
+
     // Render table
     content.innerHTML = `
       <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -649,10 +648,10 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
                 <option value="6">+6 (+9 OVR)</option>
                 <option value="7">+7 (+12 OVR)</option>
                 <option value="8">+8 (+15 OVR)</option>
-                <option value="9">+9 (+18 OVR)</option>
-                <option value="10">+10 (+21 OVR)</option>
-                <option value="11">+11 (+23 OVR)</option>
-                <option value="12">+12 (+25 OVR)</option>
+                <option value="9">+9 (+17 OVR)</option>
+                <option value="10">+10 (+19 OVR)</option>
+                <option value="11">+11 (+21 OVR)</option>
+                <option value="12">+12 (+24 OVR)</option>
                 <option value="13">+13 (+27 OVR)</option>
               </select>
             </div>
@@ -770,13 +769,13 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
         </table>
       </div>
     `;
-    
+
     const tbody = document.getElementById(`${contentId}-table`);
     renderStatsTableWithCoefficient(statsWithCoef, tbody, contentId);
-    
+
     // Initialize button states and counter
     updateAllTrainingButtons(contentId);
-    
+
   } catch (error) {
     console.error('Failed to fetch position coefficients:', error);
     const content = document.getElementById(contentId);
@@ -797,7 +796,7 @@ function renderStatsTable(statsArray, tbody) {
   for (let i = 0; i < statsArray.length; i += 4) {
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
-    
+
     for (let j = 0; j < 4; j++) {
       const statData = statsArray[i + j];
       if (statData) {
@@ -805,17 +804,17 @@ function renderStatsTable(statsArray, tbody) {
         // Display value with game buffs
         const value = stat.value || 0;
         const displayName = stat.name || formatStatKey(statData.key);
-        
+
         const nameCell = document.createElement('td');
         nameCell.className = 'py-3 px-4 text-sm font-medium text-gray-700';
         nameCell.textContent = displayName;
-        
+
         const valueCell = document.createElement('td');
         valueCell.className = 'py-3 px-4 text-sm';
         const colorClass = getStatColorClass(value);
-        
+
         valueCell.innerHTML = `<span class="${colorClass}">${value}</span>`;
-        
+
         row.appendChild(nameCell);
         row.appendChild(valueCell);
       } else {
@@ -827,7 +826,7 @@ function renderStatsTable(statsArray, tbody) {
         row.appendChild(emptyValueCell);
       }
     }
-    
+
     tbody.appendChild(row);
   }
 }
@@ -842,30 +841,30 @@ function renderStatsTableWithCoefficient(statsArray, tbody, contentId) {
     const value = parseInt(stat.value) || 0;
     const displayName = stat.name || formatStatKey(key);
     const trainingValue = trainingData[contentId].stats[key] || 0;
-    
+
     console.log(`Rendering stat: ${key}, value: ${value}, training: ${trainingValue}`);
-    
+
     const row = document.createElement('tr');
     row.className = 'hover:bg-gray-50';
-    
+
     // Stat name
     const nameCell = document.createElement('td');
     nameCell.className = 'py-2 px-3 text-sm font-medium text-gray-700';
     nameCell.textContent = displayName;
-    
+
     // Current value
     const valueCell = document.createElement('td');
     valueCell.className = 'py-2 px-3 text-center';
     const colorClass = getStatColorClass(value);
     valueCell.innerHTML = `<span class="${colorClass}" id="${contentId}-${key}-value">${value}</span>`;
-    
+
     // Training controls
     const trainingCell = document.createElement('td');
     trainingCell.className = 'py-2 px-2 text-center';
-    
+
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'flex items-center justify-center gap-1';
-    
+
     // Minus button
     const minusBtn = document.createElement('button');
     minusBtn.id = `${contentId}-${key}-minus`;
@@ -873,42 +872,42 @@ function renderStatsTableWithCoefficient(statsArray, tbody, contentId) {
     minusBtn.textContent = '−';
     minusBtn.disabled = trainingValue <= 0;
     minusBtn.onclick = () => window.updateTraining(contentId, key, -1);
-    
+
     // Training value display
     const trainingSpan = document.createElement('span');
     trainingSpan.id = `${contentId}-${key}-training`;
     trainingSpan.className = 'mx-2 font-semibold text-sm min-w-[20px] inline-block';
     trainingSpan.textContent = trainingValue;
-    
+
     // Plus button - Giới hạn training tối đa +2, và tối đa 5 chỉ số
     const plusBtn = document.createElement('button');
     plusBtn.id = `${contentId}-${key}-plus`;
     plusBtn.className = 'px-2 py-1 text-sm rounded bg-green-500 hover:bg-green-600 text-white disabled:opacity-50 disabled:cursor-not-allowed';
     plusBtn.textContent = '+';
-    
+
     // Check limits
     const trainedCount = countTrainedStats(contentId);
     const isAtMax = trainingValue >= MAX_TRAINING_VALUE;
     const isLimitReached = trainedCount >= MAX_TRAINED_STATS && trainingValue === 0;
     plusBtn.disabled = isAtMax || isLimitReached;
     plusBtn.onclick = () => window.updateTraining(contentId, key, 1);
-    
+
     console.log(`Button state for ${key}: value=${value}, training=${trainingValue}, trainedCount=${trainedCount}, disabled=${plusBtn.disabled}`);
-    
+
     controlsDiv.appendChild(minusBtn);
     controlsDiv.appendChild(trainingSpan);
     controlsDiv.appendChild(plusBtn);
     trainingCell.appendChild(controlsDiv);
-    
+
     // Team Color controls (per stat)
     const teamColorCell = document.createElement('td');
     teamColorCell.className = 'py-2 px-2 text-center';
-    
+
     const teamColorDiv = document.createElement('div');
     teamColorDiv.className = 'flex items-center justify-center gap-1';
-    
+
     const statTeamColorValue = trainingData[contentId].statTeamColors[key] || 0;
-    
+
     // Minus button
     const tcMinusBtn = document.createElement('button');
     tcMinusBtn.id = `${contentId}-${key}-tc-minus`;
@@ -916,13 +915,13 @@ function renderStatsTableWithCoefficient(statsArray, tbody, contentId) {
     tcMinusBtn.textContent = '−';
     tcMinusBtn.disabled = statTeamColorValue <= 0;
     tcMinusBtn.onclick = () => window.updateStatTeamColor(contentId, key, -1);
-    
+
     // Team Color value display
     const tcSpan = document.createElement('span');
     tcSpan.id = `${contentId}-${key}-tc-value`;
     tcSpan.className = 'mx-2 font-semibold text-sm min-w-[20px] inline-block text-indigo-600';
     tcSpan.textContent = statTeamColorValue;
-    
+
     // Plus button - Max +9
     const tcPlusBtn = document.createElement('button');
     tcPlusBtn.id = `${contentId}-${key}-tc-plus`;
@@ -930,29 +929,29 @@ function renderStatsTableWithCoefficient(statsArray, tbody, contentId) {
     tcPlusBtn.textContent = '+';
     tcPlusBtn.disabled = statTeamColorValue >= 9;
     tcPlusBtn.onclick = () => window.updateStatTeamColor(contentId, key, 1);
-    
+
     teamColorDiv.appendChild(tcMinusBtn);
     teamColorDiv.appendChild(tcSpan);
     teamColorDiv.appendChild(tcPlusBtn);
     teamColorCell.appendChild(teamColorDiv);
-    
+
     // Coefficient
     const coefCell = document.createElement('td');
     coefCell.className = 'py-2 px-3 text-xs text-gray-500 text-center font-semibold';
     coefCell.textContent = `×${coefficient}`;
-    
+
     row.appendChild(nameCell);
     row.appendChild(valueCell);
     row.appendChild(trainingCell);
     row.appendChild(teamColorCell);
     row.appendChild(coefCell);
-    
+
     tbody.appendChild(row);
   });
-  
+
   // Update initial stat displays (in case there are default buffs)
   updateAllStatDisplays(contentId);
-  
+
   // Calculate and display initial OVR
   calculateAndDisplayOVR(contentId);
 }
@@ -962,7 +961,7 @@ function renderStatsTableWithCoefficient(statsArray, tbody, contentId) {
  */
 function countTrainedStats(contentId) {
   if (!trainingData[contentId]) return 0;
-  
+
   const stats = trainingData[contentId].stats;
   return Object.values(stats).filter(val => val > 0).length;
 }
@@ -973,12 +972,12 @@ function countTrainedStats(contentId) {
  */
 function updateAllStatDisplays(contentId) {
   if (!trainingData[contentId] || !currentPlayer) return;
-  
+
   const { stats: trainingStats, statTeamColors, level, teamColor } = trainingData[contentId];
   const levelBuff = level || 0;
   const teamColorBuff = teamColor || 0;
   const globalBuff = levelBuff + teamColorBuff;
-  
+
   // Update each stat display
   for (const key of Object.keys(trainingStats)) {
     const baseValue = parseInt(currentPlayer.stats[key]?.value) || 0;
@@ -986,12 +985,12 @@ function updateAllStatDisplays(contentId) {
     const statTeamColor = (statTeamColors && statTeamColors[key]) || 0;
     const totalBuff = trainingValue + globalBuff + statTeamColor;
     const totalValue = baseValue + totalBuff;
-    
+
     const valueElement = document.getElementById(`${contentId}-${key}-value`);
     if (valueElement) {
       const colorClass = getStatColorClass(totalValue);
       valueElement.className = colorClass;
-      
+
       // Display with breakdown: "141 (+13)" or just "141" if no buffs
       if (totalBuff > 0) {
         valueElement.innerHTML = `${totalValue} <span class="text-xs text-gray-500">(+${totalBuff})</span>`;
@@ -1007,20 +1006,20 @@ function updateAllStatDisplays(contentId) {
  */
 function updateAllTrainingButtons(contentId) {
   if (!trainingData[contentId]) return;
-  
+
   const trainedCount = countTrainedStats(contentId);
   const stats = trainingData[contentId].stats;
-  
+
   // Update all buttons
   for (const key of Object.keys(stats)) {
     const trainingValue = stats[key] || 0;
     const minusBtn = document.getElementById(`${contentId}-${key}-minus`);
     const plusBtn = document.getElementById(`${contentId}-${key}-plus`);
-    
+
     if (minusBtn) {
       minusBtn.disabled = trainingValue <= 0;
     }
-    
+
     if (plusBtn) {
       // Disable if:
       // 1. Already at max training value (+2), OR
@@ -1030,7 +1029,7 @@ function updateAllTrainingButtons(contentId) {
       plusBtn.disabled = isAtMax || isLimitReached;
     }
   }
-  
+
   // Update stats counter display
   const counterDisplay = document.getElementById(`${contentId}-stats-counter`);
   if (counterDisplay) {
@@ -1047,39 +1046,39 @@ function updateAllTrainingButtons(contentId) {
 /**
  * Update upgrade level and icon
  */
-window.updateUpgradeLevel = function(contentId) {
+window.updateUpgradeLevel = function (contentId) {
   if (!trainingData[contentId]) {
     console.error('Training data not found for:', contentId);
     return;
   }
-  
+
   const select = document.getElementById(`${contentId}-upgradeLevel-select`);
   if (!select) {
     console.error('Select element not found for upgrade level');
     return;
   }
-  
+
   const level = parseInt(select.value) || 1;
   const oldLevel = trainingData[contentId].upgradeLevel || 1;
   const ovrBonus = UPGRADE_OVR_BONUS[level];
-  
+
   console.log('====================================');
   console.log(`🔧 Upgrade Level Changed: ${oldLevel} → ${level}`);
   console.log(`   OVR Bonus: +${ovrBonus}`);
   console.log('====================================');
-  
+
   trainingData[contentId].upgradeLevel = level;
-  
+
   // Update icon
   const icon = document.getElementById(`${contentId}-upgrade-icon`);
   if (icon) {
     icon.className = `upgrade-icon upgrade-level-${level}`;
   }
-  
+
   // Update stat displays (upgrade level doesn't affect individual stats, only OVR)
   // But we still call it for consistency
   updateAllStatDisplays(contentId);
-  
+
   // Recalculate OVR
   calculateAndDisplayOVR(contentId);
 };
@@ -1087,28 +1086,28 @@ window.updateUpgradeLevel = function(contentId) {
 /**
  * Update buff value from dropdown
  */
-window.updateBuffFromDropdown = function(contentId, buffType) {
+window.updateBuffFromDropdown = function (contentId, buffType) {
   if (!trainingData[contentId]) {
     console.error('Training data not found for:', contentId);
     return;
   }
-  
+
   const select = document.getElementById(`${contentId}-${buffType}-select`);
   if (!select) {
     console.error('Select element not found:', `${contentId}-${buffType}-select`);
     return;
   }
-  
+
   const newValue = parseInt(select.value) || 0;
   const oldValue = trainingData[contentId][buffType] || 0;
-  
+
   console.log(`${buffType}: ${oldValue} → ${newValue}`);
-  
+
   trainingData[contentId][buffType] = newValue;
-  
+
   // Update all stat displays with new buffs
   updateAllStatDisplays(contentId);
-  
+
   // Recalculate OVR
   calculateAndDisplayOVR(contentId);
 };
@@ -1116,28 +1115,28 @@ window.updateBuffFromDropdown = function(contentId, buffType) {
 /**
  * Update training value for a stat
  */
-window.updateTraining = function(contentId, statKey, delta) {
+window.updateTraining = function (contentId, statKey, delta) {
   console.log('updateTraining called:', { contentId, statKey, delta });
-  
+
   if (!trainingData[contentId]) {
     console.error('Training data not found for:', contentId);
     return;
   }
-  
+
   if (!currentPlayer || !currentPlayer.stats) {
     console.error('Current player data not available');
     return;
   }
-  
+
   const currentTraining = trainingData[contentId].stats[statKey] || 0;
   const value = parseInt(currentPlayer.stats[statKey]?.value) || 0;
   const trainedCount = countTrainedStats(contentId);
-  
+
   console.log('Current state:', { currentTraining, value, trainedCount });
-  
+
   // Calculate new training value
   let newTraining = currentTraining + delta;
-  
+
   // Check limits
   if (delta > 0) {
     // Adding training
@@ -1151,27 +1150,27 @@ window.updateTraining = function(contentId, statKey, delta) {
       newTraining = MAX_TRAINING_VALUE;
     }
   }
-  
+
   // Giới hạn training: 0 đến +2
   newTraining = Math.max(0, newTraining);
   newTraining = Math.min(MAX_TRAINING_VALUE, newTraining);
-  
+
   console.log('New training value:', newTraining);
-  
+
   trainingData[contentId].stats[statKey] = newTraining;
-  
+
   // Update this stat's display
   const trainingSpan = document.getElementById(`${contentId}-${statKey}-training`);
   if (trainingSpan) trainingSpan.textContent = newTraining;
-  
+
   // Update ALL buttons based on new limits
   updateAllTrainingButtons(contentId);
-  
+
   // Update all stat displays with new training values
   updateAllStatDisplays(contentId);
-  
+
   console.log('UI updated, recalculating OVR...');
-  
+
   // Recalculate OVR
   calculateAndDisplayOVR(contentId);
 };
@@ -1179,37 +1178,37 @@ window.updateTraining = function(contentId, statKey, delta) {
 /**
  * Update stat-specific team color value
  */
-window.updateStatTeamColor = function(contentId, statKey, delta) {
+window.updateStatTeamColor = function (contentId, statKey, delta) {
   console.log('updateStatTeamColor called:', { contentId, statKey, delta });
-  
+
   if (!trainingData[contentId]) {
     console.error('Training data not found for:', contentId);
     return;
   }
-  
+
   const currentValue = trainingData[contentId].statTeamColors[statKey] || 0;
   let newValue = currentValue + delta;
-  
+
   // Giới hạn: 0 đến +9
   newValue = Math.max(0, Math.min(9, newValue));
-  
+
   console.log(`Stat Team Color for ${statKey}: ${currentValue} → ${newValue}`);
-  
+
   trainingData[contentId].statTeamColors[statKey] = newValue;
-  
+
   // Update display
   const tcSpan = document.getElementById(`${contentId}-${statKey}-tc-value`);
   if (tcSpan) tcSpan.textContent = newValue;
-  
+
   // Update buttons
   const minusBtn = document.getElementById(`${contentId}-${statKey}-tc-minus`);
   const plusBtn = document.getElementById(`${contentId}-${statKey}-tc-plus`);
   if (minusBtn) minusBtn.disabled = newValue <= 0;
   if (plusBtn) plusBtn.disabled = newValue >= 9;
-  
+
   // Update all stat displays
   updateAllStatDisplays(contentId);
-  
+
   // Recalculate OVR
   calculateAndDisplayOVR(contentId);
 };
@@ -1220,55 +1219,55 @@ window.updateStatTeamColor = function(contentId, statKey, delta) {
  */
 function calculateAndDisplayOVR(contentId) {
   if (!trainingData[contentId]) return;
-  
+
   const { coefficients, stats: trainingStats, statTeamColors, level, teamColor, upgradeLevel } = trainingData[contentId];
-  
+
   // Get buff values
   const levelBuff = level || 0;
   const teamColorBuff = teamColor || 0;
   const upgradeLvl = upgradeLevel || 1;
   const upgradeOVRBonus = UPGRADE_OVR_BONUS[upgradeLvl] || 0;
-  
+
   let totalWeighted = 0;
   let totalCoefficient = 0;
   let baseWeighted = 0;
-  
+
   for (const [key, config] of Object.entries(coefficients)) {
     // Use value (current stat with game buffs) for OVR calculation
     const value = parseInt(currentPlayer.stats[key]?.value) || 0;
     const trainingValue = trainingStats[key] || 0;
     const statTeamColor = (statTeamColors && statTeamColors[key]) || 0;
     const coefficient = config.coefficient;
-    
+
     // Base OVR (with game buffs)
     baseWeighted += value * coefficient;
-    
+
     // Total OVR = (base + training + level + team_color + stat_team_color) × coefficient
     const totalValue = value + trainingValue + levelBuff + teamColorBuff + statTeamColor;
     totalWeighted += totalValue * coefficient;
-    
+
     totalCoefficient += coefficient;
   }
-  
+
   // Calculate exact values (with decimals)
   const baseOVRExact = totalCoefficient > 0 ? baseWeighted / totalCoefficient : 0;
   const calculatedOVRExact = totalCoefficient > 0 ? totalWeighted / totalCoefficient : 0;
-  
+
   // Floor values for display
   const baseOVR = Math.floor(baseOVRExact);
   const calculatedOVR = Math.floor(calculatedOVRExact);
   const statBuffOVR = calculatedOVR - baseOVR;
-  
+
   // Final OVR = Calculated OVR + Upgrade Bonus
   const finalOVRExact = calculatedOVRExact + upgradeOVRBonus;
   const finalOVR = Math.floor(finalOVRExact);
   const totalImprovement = finalOVR - baseOVR;
-  
+
   // Update display
   const ovrDisplay = document.getElementById(`${contentId}-ovr`);
   const baseOvrDisplay = document.getElementById(`${contentId}-base-ovr`);
   const buffOvrDisplay = document.getElementById(`${contentId}-buff-ovr`);
-  
+
   if (ovrDisplay) {
     // Display: 124 (124.99)
     const exactValue = finalOVRExact.toFixed(2);
@@ -1280,19 +1279,19 @@ function calculateAndDisplayOVR(contentId) {
       ovrDisplay.className = 'text-4xl font-bold text-amber-600';
     }
   }
-  
+
   if (baseOvrDisplay) {
     const baseExactValue = baseOVRExact.toFixed(2);
     baseOvrDisplay.innerHTML = `${baseOVR}<span class="text-xs text-gray-400 ml-1">(${baseExactValue})</span>`;
   }
-  
+
   if (buffOvrDisplay) {
     buffOvrDisplay.textContent = totalImprovement;
   }
-  
+
   // Count stat team colors
   const statTeamColorCount = statTeamColors ? Object.values(statTeamColors).filter(v => v > 0).length : 0;
-  
+
   console.log('💎 OVR Calculation Result:', {
     '1. Base OVR': `${baseOVR} (${baseOVRExact.toFixed(2)})`,
     '2. Global Buffs': { level: `+${levelBuff}`, teamColor: `+${teamColorBuff}` },
@@ -1314,40 +1313,40 @@ let tabsSetup = false;
 function setupTabs() {
   // Only setup once to avoid duplicate listeners
   if (tabsSetup) return;
-  
+
   const tabsContainer = document.getElementById('statsTabs');
   if (!tabsContainer) return;
-  
+
   tabsContainer.addEventListener('click', (e) => {
     const tab = e.target.closest('.stats-tab');
     if (!tab) return;
-    
+
     const tabName = tab.dataset.tab;
     const tabs = document.querySelectorAll('.stats-tab');
     const tabContents = document.querySelectorAll('.stats-tab-content');
-    
+
     // Remove active class from all tabs
     tabs.forEach(t => {
       t.classList.remove('border-primary', 'text-primary');
       t.classList.add('border-transparent', 'text-gray-500');
     });
-    
+
     // Add active class to clicked tab
     tab.classList.remove('border-transparent', 'text-gray-500');
     tab.classList.add('border-primary', 'text-primary');
-    
+
     // Hide all tab contents
     tabContents.forEach(content => {
       content.classList.add('hidden');
     });
-    
+
     // Show selected tab content
     const selectedContent = document.getElementById(`${tabName}Tab`);
     if (selectedContent) {
       selectedContent.classList.remove('hidden');
     }
   });
-  
+
   tabsSetup = true;
 }
 
@@ -1356,18 +1355,18 @@ function setupTabs() {
  */
 function displayHiddenStats(player) {
   hiddenStatsDiv.innerHTML = '';
-  
+
   if (!player.hiddenStats || !Array.isArray(player.hiddenStats) || player.hiddenStats.length === 0) {
     hiddenStatsSection.classList.add('hidden');
     return;
   }
-  
+
   hiddenStatsSection.classList.remove('hidden');
-  
+
   player.hiddenStats.forEach(trait => {
     const traitCard = document.createElement('div');
     traitCard.className = 'flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:shadow-md transition-all';
-    
+
     traitCard.innerHTML = `
       <img 
         src="${trait.iconUrl || ''}" 
@@ -1380,7 +1379,7 @@ function displayHiddenStats(player) {
         <p class="text-sm text-gray-600">${trait.description || ''}</p>
       </div>
     `;
-    
+
     hiddenStatsDiv.appendChild(traitCard);
   });
 }
@@ -1401,22 +1400,22 @@ function formatStatKey(key) {
  */
 function displayClubCareer(player) {
   clubCareerDiv.innerHTML = '';
-  
+
   if (!player.clubCareer || !Array.isArray(player.clubCareer) || player.clubCareer.length === 0) {
     clubCareerSection.classList.add('hidden');
     return;
   }
-  
+
   clubCareerSection.classList.remove('hidden');
-  
+
   // Create timeline container
   const timeline = document.createElement('div');
   timeline.className = 'space-y-2';
-  
+
   player.clubCareer.forEach((career, index) => {
     const clubItem = document.createElement('div');
     clubItem.className = 'flex items-center gap-3 group hover:bg-gray-50 p-2 rounded-lg transition-colors';
-    
+
     clubItem.innerHTML = `
       <div class="flex-shrink-0 w-28 text-xs font-semibold text-gray-500 text-right">
         ${career.period || 'N/A'}
@@ -1428,10 +1427,10 @@ function displayClubCareer(player) {
         </div>
       </div>
     `;
-    
+
     timeline.appendChild(clubItem);
   });
-  
+
   clubCareerDiv.appendChild(timeline);
 }
 
