@@ -67,7 +67,7 @@ const SEASONS = [
   '20KL', '20KLB', '21KL', '21KLB', '22KL', '22KLB', '23KL', '23KLB',
   '24KL', '24KLB', '25KL', 'K18', 'K19', 'K21', 'K22', 'K23',
   '22TG', '21TG', '24WL', '23WL', '22WL', '21WL', '20WL', '19WL',
-  'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL'
+  'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL','26TYN', '25UCL', '26TY'
 ];
 
 // Seasons to hide from search filters/UI (still exist in DB & crawl)
