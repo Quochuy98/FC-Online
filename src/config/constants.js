@@ -33,7 +33,7 @@ const SEASONS = [
   '25PL', '24PL', '23PL', '22PL', '21PL', '20A', '19S', '19A', '18S', '18A',
   '23NG', '22NG', '21NG', '20NG', '19NG',
   '25HR', '24HR', '23HR', '22HR',
-  '24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
+  '25UCL', '24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
   '25VB', '24VB', '23VB', '22VB', 'VFG', 'VNL', 'VN',
   'JA', 'MCC', 'MCI', 'ICONM', 'PSG', 'RMFC', 'LA', 'TKL', 'TKI',
   'THB', 'THL', 'VLA', 'HC', '12KH',

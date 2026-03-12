@@ -60,14 +60,14 @@ const SEASONS = [
   '25PL', '24PL', '23PL', '22PL', '21PL', '20A', '19S', '19A', '18S', '18A',
   '23NG', '22NG', '21NG', '20NG', '19NG',
   '25HR', '24HR', '23HR', '22HR',
-  '24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
+  '25UCL','24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
   '25VB', '24VB', '23VB', '22VB', 'VFG', 'VNL', 'VN',
   'JA', 'MCC', 'MCI', 'ICONM', 'PSG', 'RMFC', 'LA', 'TKL', 'TKI',
   'THB', 'THL', 'VLA', 'HC', '12KH',
   '20KL', '20KLB', '21KL', '21KLB', '22KL', '22KLB', '23KL', '23KLB',
   '24KL', '24KLB', '25KL', 'K18', 'K19', 'K21', 'K22', 'K23',
   '22TG', '21TG', '24WL', '23WL', '22WL', '21WL', '20WL', '19WL',
-  'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL','26TYN', '25UCL', '26TY'
+  'SYL', 'DYL', 'RYL', 'TYL', 'MLS', 'TK', '25CSL', 'FLG', 'EL'
 ];
 
 // Seasons to hide from search filters/UI (still exist in DB & crawl)
