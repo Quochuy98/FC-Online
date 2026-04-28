@@ -366,10 +366,6 @@ function getTopStatsForPosition(position, playerStats) {
  */
 function createPlayerCard(player) {
 
-  console.info('🚀 --------------------------------------------------------------🚀');
-  console.info('🚀 ~ search.js:369 ~ player:', JSON.stringify(player, null, 2));
-  console.info('🚀 --------------------------------------------------------------🚀');
-
   const card = document.createElement('div');
   card.className = 'bg-white border-2 border-gray-100 rounded-xl p-4 hover:border-primary hover:shadow-lg transition-all';
 
