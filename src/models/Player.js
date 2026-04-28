@@ -102,8 +102,8 @@ PlayerSchema.statics.findByPlayerIdAndSeason = function(playerId, season) {
 };
 
 // Static method: Check if player exists
-PlayerSchema.statics.exists = function(playerId, season) {
-  return this.exists({ playerId, season });
+PlayerSchema.statics.playerExists = function(playerId, season) {
+  return mongoose.Model.exists.call(this, { playerId, season });
 };
 
 // Static method: Search players with filters

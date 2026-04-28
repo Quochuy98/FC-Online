@@ -6,6 +6,7 @@ const cheerio = require('cheerio');
 const logger = require('../utils/logger');
 const { fetchWithRetry } = require('./httpClient');
 const { BASE_URL } = require('../config/constants');
+const { normalizeAutomuaUrl } = require('../utils/urlNormalizer');
 
 /**
  * Build URL for player list page
@@ -44,7 +45,9 @@ function extractPlayerList(html) {
     if ($link.length === 0) return;
 
     const href = $link.attr('href');
-    const playerUrl = href.startsWith('http') ? href : `${BASE_URL}${href}`;
+    const playerUrl = normalizeAutomuaUrl(
+      href.startsWith('http') ? href : `${BASE_URL}${href}`
+    );
     
     // Extract player ID from URL (e.g., cristiano-ronaldo-zzwyoyoy)
     const playerId = href.split('/').pop();
@@ -86,7 +89,11 @@ function extractPlayerList(html) {
         playerId,
         name,
         playerUrl,
-        avatarUrl: avatarUrl ? (avatarUrl.startsWith('http') ? avatarUrl : `${BASE_URL}${avatarUrl}`) : null,
+        avatarUrl: avatarUrl
+          ? normalizeAutomuaUrl(
+              avatarUrl.startsWith('http') ? avatarUrl : `${BASE_URL}${avatarUrl}`
+            )
+          : null,
         season,
         positions,
         overallRating: overallRating || null,
