@@ -122,11 +122,10 @@ function displayPositions(player) {
     const bgColor = isPrimary ? 'bg-primary' : 'bg-gray-600';
     const borderClass = isPrimary ? 'border-2 border-primary-dark' : '';
 
-    // Extract rating by index (format: "122|121|120" → ratings[index])
+    // Extract the displayed rating from formats like "122|121".
     let rating = '';
     if (pos.rating && typeof pos.rating === 'string') {
-      const ratings = pos.rating.split('|');
-      rating = ratings[index] || ratings[0] || '';
+      rating = pos.rating.split('|')[0].trim();
     } else if (typeof pos.rating === 'number') {
       rating = pos.rating;
     }

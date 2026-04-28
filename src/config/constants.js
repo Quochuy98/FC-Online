@@ -20,7 +20,7 @@ const POSITIONS = [
 ];
 
 const SEASONS = [
-  'ICONTM', 'ICON', 'ICONTMB', 'WG', '26HR', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
+  'ICONTM', 'ICON', 'WG', '26HR', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
   '25IM', '25IMF', 'LE', 'NO7', 'WB', 'GRU', 'BDO', 'BLD', 'PRM',
   '24EP', 'CU', 'MDL', 'LD', 'UT', 'JNM', 'DC', 'FC', '23HW', 'CC',
   'HG', 'RTN', 'BWC', 'WC22', '26TY', '26TYN', '25TY', '25TYN', '24TY',

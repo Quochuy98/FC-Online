@@ -35,22 +35,22 @@ async function init() {
       PlayerAPI.getConstants(),
       fetch('/api/position-coefficients/all').then(r => r.json()).catch(() => null)
     ]);
-    
+
     constants = constantsData;
     positionCoefficients = coefficientsData?.data || null;
-    
+
     // Populate filters
     populateFilters();
-    
+
     // Populate quick seasons
     populateQuickSeasons();
-    
+
     // Load URL params
     loadUrlParams();
-    
+
     // Perform initial search
     await performSearch();
-    
+
     // Setup event listeners
     setupEventListeners();
   } catch (error) {
@@ -69,7 +69,7 @@ function populateFilters() {
     option.textContent = pos;
     positionFilter.appendChild(option);
   });
-  
+
 }
 
 /**
@@ -81,20 +81,20 @@ function populateQuickSeasons() {
     const wrapper = document.createElement('div');
     wrapper.className = 'p-2 rounded-lg border-2 border-transparent hover:border-primary hover:bg-blue-50 transition-all cursor-pointer';
     wrapper.dataset.season = season;
-    
+
     const badge = document.createElement('span');
     badge.className = `season-badge bg-${season}`;
     badge.title = season;
-    
+
     wrapper.appendChild(badge);
     wrapper.addEventListener('click', () => handleQuickSeasonClick(season, wrapper));
-    
+
     quickSeasonsDiv.appendChild(wrapper);
   });
-  
+
   // Update seasons counter
   updateSeasonsCounter();
-  
+
   // Update container height if needed
   if (typeof updateSeasonsHeight === 'function') {
     updateSeasonsHeight();
@@ -107,7 +107,7 @@ function populateQuickSeasons() {
 function handleQuickSeasonClick(season, element) {
   // Check if already selected
   const isSelected = selectedSeasons.includes(season);
-  
+
   if (isSelected) {
     // Remove from selection
     selectedSeasons = selectedSeasons.filter(s => s !== season);
@@ -117,10 +117,10 @@ function handleQuickSeasonClick(season, element) {
     selectedSeasons.push(season);
     element.classList.add('border-primary', 'bg-blue-50');
   }
-  
+
   // Update counter
   updateSeasonsCounter();
-  
+
   // Perform search
   currentPage = 1;
   performSearch();
@@ -135,7 +135,7 @@ function updateSeasonsCounter() {
     const total = constants.seasons.length;
     const selected = selectedSeasons.length;
     seasonsCount.textContent = `${selected}/${total} mùa`;
-    
+
     // Change color if some selected
     if (selected > 0) {
       seasonsCount.className = 'text-sm font-bold text-primary';
@@ -150,10 +150,10 @@ function updateSeasonsCounter() {
  */
 function loadUrlParams() {
   const params = Utils.getUrlParams();
-  
+
   if (params.name) playerNameInput.value = params.name;
   if (params.position) positionFilter.value = params.position;
-  
+
   // Handle multiple seasons (comma-separated)
   if (params.seasons) {
     selectedSeasons = params.seasons.split(',').filter(s => s.trim());
@@ -166,7 +166,7 @@ function loadUrlParams() {
     });
     updateSeasonsCounter();
   }
-  
+
   if (params.minOverall) minOverallInput.value = params.minOverall;
   if (params.maxOverall) maxOverallInput.value = params.maxOverall;
   if (params.page) currentPage = parseInt(params.page);
@@ -181,10 +181,10 @@ function setupEventListeners() {
     currentPage = 1;
     performSearch();
   });
-  
+
   // Clear button
   clearBtn.addEventListener('click', clearFilters);
-  
+
   // Enter key in search input
   playerNameInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
@@ -192,16 +192,16 @@ function setupEventListeners() {
       performSearch();
     }
   });
-  
+
   // Auto-search on filter change (debounced)
   const debouncedSearch = Utils.debounce(() => {
     currentPage = 1;
     performSearch();
   }, 500);
-  
+
   // Position filter change
   positionFilter.addEventListener('change', debouncedSearch);
-  
+
   // Overall inputs
   [minOverallInput, maxOverallInput].forEach(el => {
     el.addEventListener('input', debouncedSearch);
@@ -218,7 +218,7 @@ async function performSearch() {
     loadingDiv.classList.add('flex');
     errorDiv.classList.add('hidden');
     playersGrid.innerHTML = '';
-    
+
     // Build filters
     currentFilters = {
       name: playerNameInput.value.trim(),
@@ -230,29 +230,29 @@ async function performSearch() {
       page: currentPage,
       limit: 20,
     };
-    
+
     // Add multiple seasons as comma-separated string
     if (selectedSeasons.length > 0) {
       currentFilters.seasons = selectedSeasons.join(',');
     }
-    
+
     // Remove empty values (except sort params)
     Object.keys(currentFilters).forEach(key => {
       if (!currentFilters[key] && key !== 'sortBy' && key !== 'sortOrder') {
         delete currentFilters[key];
       }
     });
-    
+
     // Update URL with filters (including sort params)
     Utils.updateUrl(currentFilters);
-    
+
     // Fetch data
     const result = await PlayerAPI.searchPlayers(currentFilters);
-    
+
     // Hide loading
     loadingDiv.classList.add('hidden');
     loadingDiv.classList.remove('flex');
-    
+
     // Display results
     displayResults(result);
   } catch (error) {
@@ -267,20 +267,20 @@ async function performSearch() {
  */
 function displayResults(result) {
   const { data, pagination } = result;
-  
+
   // Update result count
   resultCount.textContent = `(${Utils.formatNumber(pagination.total)})`;
-  
+
   // Update pagination info
   const start = (pagination.page - 1) * pagination.limit + 1;
   const end = Math.min(pagination.page * pagination.limit, pagination.total);
   paginationInfo.textContent = pagination.total > 0
     ? `Hiển thị ${start}-${end} / ${Utils.formatNumber(pagination.total)}`
     : 'Không có kết quả';
-  
+
   // Clear grid
   playersGrid.innerHTML = '';
-  
+
   // Display players
   if (data.length === 0) {
     playersGrid.innerHTML = `
@@ -292,12 +292,12 @@ function displayResults(result) {
     paginationDiv.innerHTML = '';
     return;
   }
-  
+
   data.forEach(player => {
     const card = createPlayerCard(player);
     playersGrid.appendChild(card);
   });
-  
+
   // Display pagination
   displayPagination(pagination);
 }
@@ -314,10 +314,10 @@ function getTopStatsForPosition(position, playerStats) {
       { key: 'shortPassing', name: 'Chuyền ngắn', value: playerStats?.shortPassing?.value || 0 }
     ];
   }
-  
+
   // Find coefficient key for this position
   let coefficients = null;
-  
+
   // Direct match
   if (positionCoefficients[position]) {
     coefficients = positionCoefficients[position];
@@ -333,7 +333,7 @@ function getTopStatsForPosition(position, playerStats) {
       }
     }
   }
-  
+
   if (!coefficients) {
     // Fallback if position not found
     return [
@@ -342,7 +342,7 @@ function getTopStatsForPosition(position, playerStats) {
       { key: 'shortPassing', name: 'Chuyền ngắn', value: playerStats?.shortPassing?.value || 0 }
     ];
   }
-  
+
   // Build array of stats with coefficients
   const statsArray = [];
   for (const [key, config] of Object.entries(coefficients)) {
@@ -355,7 +355,7 @@ function getTopStatsForPosition(position, playerStats) {
       });
     }
   }
-  
+
   // Sort by coefficient (high to low) and take top 3
   statsArray.sort((a, b) => b.coefficient - a.coefficient);
   return statsArray.slice(0, 3);
@@ -365,24 +365,32 @@ function getTopStatsForPosition(position, playerStats) {
  * Create player list item
  */
 function createPlayerCard(player) {
+
+  console.info('🚀 --------------------------------------------------------------🚀');
+  console.info('🚀 ~ search.js:369 ~ player:', JSON.stringify(player, null, 2));
+  console.info('🚀 --------------------------------------------------------------🚀');
+
   const card = document.createElement('div');
   card.className = 'bg-white border-2 border-gray-100 rounded-xl p-4 hover:border-primary hover:shadow-lg transition-all';
-  
-  // Use overallDisplay if available, otherwise extract from positions
-  let overall = player.overallDisplay || 0;
-  if (!overall && Array.isArray(player.positions) && player.position) {
-    const posObj = player.positions.find(p => p.position === player.position);
-    if (posObj && typeof posObj.rating === 'string') {
-      overall = posObj.rating.split('|')[0];
-    }
-  }
-  
+
+  // Prefer the rating that matches the active player position.
+  const matchedPosition = Array.isArray(player.positions)
+    ? player.positions.find((item) => item.position === player.position)
+    : null;
+  const rawOverall = matchedPosition?.rating
+    || player?.positions?.[0]?.rating
+    || player?.overallDisplay
+    || 0;
+  const overall = typeof rawOverall === 'string'
+    ? rawOverall.split('|')[0].trim()
+    : rawOverall;
+
   // Get salary from overallRating
   const salary = player.overallRating || 0;
-  
+
   // Get top 3 stats for this position
   const topStats = getTopStatsForPosition(player.position, player.stats);
-  
+
   // Build stats HTML
   const statsHTML = topStats.map(stat => `
     <div class="text-center min-w-[70px]">
@@ -390,9 +398,9 @@ function createPlayerCard(player) {
       <div class="text-base font-bold text-gray-800">${stat.value}</div>
     </div>
   `).join('');
-  
+
   const isSelected = selectedPlayersForCompare.includes(player.playerId);
-  
+
   card.innerHTML = `
     <div class="flex items-center gap-4">
       <!-- Checkbox for comparison -->
@@ -439,13 +447,13 @@ function createPlayerCard(player) {
       </div>
     </div>
   `;
-  
+
   // Add checkbox event listener
   const checkbox = card.querySelector('.compare-checkbox');
   checkbox.addEventListener('change', (e) => {
     handleCompareCheckbox(player.playerId, player, e.target.checked);
   });
-  
+
   return card;
 }
 
@@ -454,18 +462,17 @@ function createPlayerCard(player) {
  */
 function displayPagination(pagination) {
   paginationDiv.innerHTML = '';
-  
+
   const { page, pages } = pagination;
-  
+
   // Previous button
   const prevBtn = document.createElement('button');
   prevBtn.textContent = '← Trước';
   prevBtn.disabled = page === 1;
-  prevBtn.className = `px-4 py-2 border-2 rounded-lg font-semibold transition-all ${
-    page === 1 
-      ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
-      : 'border-gray-200 text-gray-700 hover:border-primary hover:bg-blue-50'
-  }`;
+  prevBtn.className = `px-4 py-2 border-2 rounded-lg font-semibold transition-all ${page === 1
+    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+    : 'border-gray-200 text-gray-700 hover:border-primary hover:bg-blue-50'
+    }`;
   prevBtn.onclick = () => {
     if (page > 1) {
       currentPage = page - 1;
@@ -473,16 +480,16 @@ function displayPagination(pagination) {
     }
   };
   paginationDiv.appendChild(prevBtn);
-  
+
   // Page numbers (show max 7 pages)
   const maxPages = 7;
   let startPage = Math.max(1, page - Math.floor(maxPages / 2));
   let endPage = Math.min(pages, startPage + maxPages - 1);
-  
+
   if (endPage - startPage < maxPages - 1) {
     startPage = Math.max(1, endPage - maxPages + 1);
   }
-  
+
   // First page
   if (startPage > 1) {
     addPageButton(1);
@@ -493,12 +500,12 @@ function displayPagination(pagination) {
       paginationDiv.appendChild(dots);
     }
   }
-  
+
   // Page buttons
   for (let i = startPage; i <= endPage; i++) {
     addPageButton(i);
   }
-  
+
   // Last page
   if (endPage < pages) {
     if (endPage < pages - 1) {
@@ -509,16 +516,15 @@ function displayPagination(pagination) {
     }
     addPageButton(pages);
   }
-  
+
   // Next button
   const nextBtn = document.createElement('button');
   nextBtn.textContent = 'Sau →';
   nextBtn.disabled = page === pages;
-  nextBtn.className = `px-4 py-2 border-2 rounded-lg font-semibold transition-all ${
-    page === pages 
-      ? 'border-gray-200 text-gray-400 cursor-not-allowed' 
-      : 'border-gray-200 text-gray-700 hover:border-primary hover:bg-blue-50'
-  }`;
+  nextBtn.className = `px-4 py-2 border-2 rounded-lg font-semibold transition-all ${page === pages
+    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
+    : 'border-gray-200 text-gray-700 hover:border-primary hover:bg-blue-50'
+    }`;
   nextBtn.onclick = () => {
     if (page < pages) {
       currentPage = page + 1;
@@ -526,11 +532,11 @@ function displayPagination(pagination) {
     }
   };
   paginationDiv.appendChild(nextBtn);
-  
+
   function addPageButton(pageNum) {
     const btn = document.createElement('button');
     btn.textContent = pageNum;
-    btn.className = pageNum === page 
+    btn.className = pageNum === page
       ? 'px-4 py-2 bg-primary text-white border-2 border-primary rounded-lg font-semibold'
       : 'px-4 py-2 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:border-primary hover:bg-blue-50 transition-all';
     btn.onclick = () => {
@@ -549,18 +555,18 @@ function clearFilters() {
   positionFilter.value = '';
   minOverallInput.value = '';
   maxOverallInput.value = '';
-  
+
   // Clear selected seasons
   selectedSeasons = [];
-  
+
   // Clear quick season badges active state
   quickSeasonsDiv.querySelectorAll('[data-season]').forEach(el => {
     el.classList.remove('border-primary', 'bg-blue-50');
   });
-  
+
   // Update counter
   updateSeasonsCounter();
-  
+
   currentPage = 1;
   performSearch();
 }
@@ -586,23 +592,23 @@ function handleCompareCheckbox(playerId, playerData, isChecked) {
       if (checkbox) checkbox.checked = false;
       return;
     }
-    
+
     // Store player data in localStorage
     const existingData = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
     existingData.push(playerData);
     localStorage.setItem('comparePlayers', JSON.stringify(existingData));
-    
+
     selectedPlayersForCompare.push(playerId);
   } else {
     // Remove from selection
     selectedPlayersForCompare = selectedPlayersForCompare.filter(id => id !== playerId);
-    
+
     // Update localStorage
     const existingData = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
     const updatedData = existingData.filter(p => p.playerId !== playerId);
     localStorage.setItem('comparePlayers', JSON.stringify(updatedData));
   }
-  
+
   // Update compare button
   updateCompareButton();
 }
@@ -613,11 +619,11 @@ function handleCompareCheckbox(playerId, playerData, isChecked) {
 function updateCompareButton() {
   const compareBtn = document.getElementById('compareBtn');
   const compareCount = document.getElementById('compareCount');
-  
+
   if (!compareBtn) return;
-  
+
   const count = selectedPlayersForCompare.length;
-  
+
   if (count > 0) {
     compareBtn.classList.remove('hidden');
     if (compareCount) {
@@ -631,27 +637,27 @@ function updateCompareButton() {
 /**
  * Go to compare page
  */
-window.goToCompare = function() {
+window.goToCompare = function () {
   if (selectedPlayersForCompare.length < 2) {
     alert('Vui lòng chọn ít nhất 2 cầu thủ để so sánh!');
     return;
   }
-  
+
   window.location.href = '/compare';
 };
 
 /**
  * Clear compare selection
  */
-window.clearCompareSelection = function() {
+window.clearCompareSelection = function () {
   selectedPlayersForCompare = [];
   localStorage.removeItem('comparePlayers');
-  
+
   // Uncheck all checkboxes
   document.querySelectorAll('.compare-checkbox').forEach(cb => {
     cb.checked = false;
   });
-  
+
   updateCompareButton();
 };
 
@@ -660,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load selected players from localStorage
   const savedPlayers = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
   selectedPlayersForCompare = savedPlayers.map(p => p.playerId);
-  
+
   init();
   updateCompareButton();
 });
