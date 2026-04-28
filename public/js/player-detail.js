@@ -378,19 +378,19 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
                   onchange="updateUpgradeLevel('${contentId}')"
                   class="flex-1 px-2 py-1 text-xs font-bold text-yellow-700 bg-white border-2 border-yellow-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 cursor-pointer hover:border-yellow-400 transition-colors"
                 >
-                  <option value="1">+1 (+0)</option>
-                  <option value="2">+2 (+1)</option>
-                  <option value="3">+3 (+2)</option>
+                  <option value="0">+1 (+0)</option>
+                  <option value="1">+2 (+1)</option>
+                  <option value="2">+3 (+2)</option>
                   <option value="4">+4 (+4)</option>
-                  <option value="5">+5 (+6)</option>
-                  <option value="6">+6 (+9)</option>
-                  <option value="7">+7 (+12)</option>
-                  <option value="8">+8 (+15)</option>
-                  <option value="9">+9 (+17)</option>
-                  <option value="10">+10 (+19)</option>
-                  <option value="11">+11 (+21)</option>
-                  <option value="12">+12 (+24)</option>
-                  <option value="13">+13 (+27)</option>
+                  <option value="6">+5 (+6)</option>
+                  <option value="8">+6 (+7)</option>
+                  <option value="11">+7 (+10)</option>
+                  <option value="15">+8 (+15)</option>
+                  <option value="17">+9 (+17)</option>
+                  <option value="19">+10 (+19)</option>
+                  <option value="21">+11 (+21)</option>
+                  <option value="24">+12 (+24)</option>
+                  <option value="27">+13 (+27)</option>
                 </select>
               </div>
             </div>
