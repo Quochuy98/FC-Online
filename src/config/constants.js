@@ -14,13 +14,13 @@ if (!process.env.MONGODB_URI && typeof require !== 'undefined') {
 const BASE_URL = 'https://automua.com';
 
 const POSITIONS = [
-  'ST', 'LW', 'RW', 'CF', 'CAM', 
-  'LM', 'RM', 'CM', 'CDM', 
+  'ST', 'LW', 'RW', 'CF', 'CAM',
+  'LM', 'RM', 'CM', 'CDM',
   'LWB', 'RWB', 'LB', 'RB', 'CB', 'GK'
 ];
 
 const SEASONS = [
-  'ICONTM', 'ICON', 'ICONTMB', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
+  'ICONTM', 'ICON', 'ICONTMB', 'WG', '26HR', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
   '25IM', '25IMF', 'LE', 'NO7', 'WB', 'GRU', 'BDO', 'BLD', 'PRM',
   '24EP', 'CU', 'MDL', 'LD', 'UT', 'JNM', 'DC', 'FC', '23HW', 'CC',
   'HG', 'RTN', 'BWC', 'WC22', '26TY', '26TYN', '25TY', '25TYN', '24TY',

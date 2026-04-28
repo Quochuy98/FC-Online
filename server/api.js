@@ -47,7 +47,7 @@ const POSITIONS = [
 
 // Full seasons list (used for crawl, etc.)
 const SEASONS = [
-  'ICONTM', 'ICON', 'ICONTMB', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
+  'ICONTM', 'ICON', 'ICONTMB', 'WG', '26HR', 'FAC', '25DP', 'FSL', 'WS', 'DCB', 'CH',
   '25IM', '25IMF', 'LE', 'NO7', 'WB', 'GRU', 'BDO', 'BLD', 'PRM',
   '24EP', 'CU', 'MDL', 'LD', 'UT', 'JNM', 'DC', 'FC', '23HW', 'CC',
   'HG', 'RTN', 'BWC', 'WC22', '26TY', '26TYN', '25TY', '25TYN', '24TY',
@@ -60,7 +60,7 @@ const SEASONS = [
   '25PL', '24PL', '23PL', '22PL', '21PL', '20A', '19S', '19A', '18S', '18A',
   '23NG', '22NG', '21NG', '20NG', '19NG',
   '25HR', '24HR', '23HR', '22HR',
-  '25UCL','24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
+  '25UCL', '24UCL', '23UCL', '22UCL', '21UCL', '20UCL', '19UCL',
   '25VB', '24VB', '23VB', '22VB', 'VFG', 'VNL', 'VN',
   'JA', 'MCC', 'MCI', 'ICONM', 'PSG', 'RMFC', 'LA', 'TKL', 'TKI',
   'THB', 'THL', 'VLA', 'HC', '12KH',
@@ -152,11 +152,11 @@ app.get('/api/position-coefficients/:position', (req, res) => {
   try {
     const { position } = req.params;
     const positionCoefficients = require('../src/config/positionCoefficients.json');
-    
+
     // Find coefficient key (handles grouped positions like RW/LW)
     let coefficientKey = null;
     let coefficients = null;
-    
+
     // Direct match
     if (positionCoefficients[position]) {
       coefficientKey = position;
@@ -174,14 +174,14 @@ app.get('/api/position-coefficients/:position', (req, res) => {
         }
       }
     }
-    
+
     if (!coefficients) {
       return res.status(404).json({
         success: false,
         error: `Position ${position} not found`,
       });
     }
-    
+
     res.json({
       success: true,
       data: {
@@ -230,7 +230,7 @@ app.get('/api/players/search', async (req, res) => {
         .split('')
         .map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
       escapedTerm = chars.join('\\W*');
-      
+
       // Use $or to prioritize exact matches and matches at word boundaries
       // This helps find "etoo" in "Eto'o" and "Ro" in "Ronaldo"
       query.$or = [
@@ -268,6 +268,11 @@ app.get('/api/players/search', async (req, res) => {
 
     // Build sort - prioritize by overallDisplay (default)
     const sort = {};
+
+    console.info('🚀 -----------------------------------------------------------🚀');
+    console.info('🚀 ~ api.js:272 ~ sortBy:', JSON.stringify(sortBy, null, 2));
+    console.info('🚀 -----------------------------------------------------------🚀');
+
     if (sortBy === 'overall') {
       sort.overallDisplay = sortOrder === 'asc' ? 1 : -1;
     } else if (sortBy === 'name') {
@@ -287,35 +292,35 @@ app.get('/api/players/search', async (req, res) => {
       .skip((parseInt(page) - 1) * parseInt(limit))
       .limit(parseInt(limit))
       .lean(); // Use lean() for better performance (returns plain JS objects)
-    
+
     // If name search was used, sort results by match quality (starts with > word boundary > contains)
     // This ensures "Ro" finds "Ronaldo" before "Roberto", "etoo" finds "Eto'o"
     if (name && name.trim() && players.length > 0 && escapedTerm) {
       const searchLower = textSearchTerm.toLowerCase();
-      
+
       players.sort((a, b) => {
         const aName = a.name.toLowerCase();
         const bName = b.name.toLowerCase();
         const aOverall = a.overallDisplay || 0;
         const bOverall = b.overallDisplay || 0;
-        
+
         // Priority 1: Check if name starts with search term
         const aStarts = aName.startsWith(searchLower);
         const bStarts = bName.startsWith(searchLower);
         if (aStarts && !bStarts) return -1;
         if (!aStarts && bStarts) return 1;
-        
+
         // Priority 2: Check word boundary match (word starts with search term)
         const aWordBoundary = new RegExp(`\\b${escapedTerm}`, 'i').test(aName);
         const bWordBoundary = new RegExp(`\\b${escapedTerm}`, 'i').test(bName);
         if (aWordBoundary && !bWordBoundary) return -1;
         if (!aWordBoundary && bWordBoundary) return 1;
-        
+
         // Priority 3: Sort by overallDisplay (higher first, unless sortOrder is asc)
         if (sortBy === 'overall') {
           return sortOrder === 'asc' ? aOverall - bOverall : bOverall - aOverall;
         }
-        
+
         return 0;
       });
     }
@@ -361,9 +366,9 @@ app.get('/api/players/by-club', async (req, res) => {
       .sort({ overallDisplay: -1 })
       .lean();
 
-    logger.info('Club search completed', { 
-      club, 
-      resultCount: players.length 
+    logger.info('Club search completed', {
+      club,
+      resultCount: players.length
     });
 
     res.json({

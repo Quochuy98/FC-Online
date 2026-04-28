@@ -7,6 +7,7 @@ const { POSITIONS, SEASONS, REQUEST_CONFIG } = require('../config/constants');
 const { scrapePlayerList } = require('./playerListScraper');
 const { scrapePlayerDetail } = require('./playerDetailScraper');
 const { upsertPlayer, playerExists } = require('../database/playerRepository');
+const { parseOverallDisplay } = require('../utils/overallParser');
 const {
   loadProgress,
   clearProgress,
@@ -81,6 +82,13 @@ async function crawlPositionAndSeason(position, season, options = {}) {
           ...detailedData,
           position, // Add the position we're crawling for
         };
+
+        const overallRaw = completePlayerData.overallRating;
+        const overallDisplay = parseOverallDisplay(overallRaw);
+        if (overallDisplay !== null) {
+          completePlayerData.overallDisplay = overallDisplay;
+          completePlayerData.overallRating = overallDisplay;
+        }
         
         // Save to database
         await upsertPlayer(completePlayerData);
