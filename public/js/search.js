@@ -410,7 +410,7 @@ function createPlayerCard(player) {
       
       <!-- Avatar -->
       <img 
-        src="${player.avatarUrl || '/images/default-player.png'}" 
+        src="${player.avatarUrl}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0 cursor-pointer"
         

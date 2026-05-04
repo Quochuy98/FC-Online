@@ -209,7 +209,7 @@ function createPlayerCard(player, playerCount = 4) {
     <div class="flex items-center gap-3 mb-3 pb-3 border-b-2 border-gray-100">
       <!-- Avatar -->
       <img 
-        src="${player.avatarUrl || '/images/default-player.png'}" 
+        src="${player.avatarUrl}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-primary flex-shrink-0"
         

@@ -84,7 +84,7 @@ async function displayPlayer(player) {
   currentPlayer = player;
 
   // Header
-  playerAvatar.src = player.avatarUrl || '/images/default-player.png';
+  playerAvatar.src = player.avatarUrl;
   playerAvatar.onerror = () => playerAvatar.src = '/images/default-player.png';
   playerName.textContent = player.name;
   playerSeasonBadge.className = `season-badge bg-${player.season}`;

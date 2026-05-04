@@ -94,7 +94,7 @@ function createPlayerCard(player, searchedClub) {
 
   li.innerHTML = `
     <img 
-      src="${player.avatarUrl || '/images/default-player.png'}" 
+      src="${player.avatarUrl}" 
       alt="${player.name}" 
       class="w-20 h-20 rounded-full object-cover border-2 border-primary flex-shrink-0"
       
