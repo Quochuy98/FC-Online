@@ -421,8 +421,8 @@ function renderTrainingContent(positionGroup, statsWithCoef, contentId) {
                   <option value="3">+3 (+2)</option>
                   <option value="4">+4 (+4)</option>
                   <option value="5">+5 (+6)</option>
-                  <option value="6">+6 (+7)</option>
-                  <option value="7">+7 (+10)</option>
+                  <option value="6">+6 (+8)</option>
+                  <option value="7">+7 (+11)</option>
                   <option value="8">+8 (+15)</option>
                   <option value="9">+9 (+17)</option>
                   <option value="10">+10 (+19)</option>
