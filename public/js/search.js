@@ -413,7 +413,7 @@ function createPlayerCard(player) {
         src="${player.avatarUrl || '/images/default-player.png'}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0 cursor-pointer"
-        onerror="this.src='/images/default-player.png'"
+        
         onclick="window.location.href='/player?id=${player.playerId}'"
       >
       

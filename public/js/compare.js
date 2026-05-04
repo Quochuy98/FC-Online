@@ -20,7 +20,7 @@ const POSITION_GROUPS = [
 
 // Upgrade OVR Bonus Map
 const UPGRADE_OVR_BONUS = {
-  1: 0, 2: 1, 3: 2, 4: 4, 5: 6, 6: 9, 7: 12, 
+  1: 0, 2: 1, 3: 2, 4: 4, 5: 6, 6: 9, 7: 12,
   8: 15, 9: 18, 10: 21, 11: 23, 12: 25, 13: 27
 };
 
@@ -45,25 +45,25 @@ async function init() {
     // Show loading
     loadingDiv.classList.remove('hidden');
     compareContent.classList.add('hidden');
-    
+
     // Load players from localStorage
     const savedPlayers = JSON.parse(localStorage.getItem('comparePlayers') || '[]');
-    
+
     if (savedPlayers.length < 2) {
       showError('Vui lòng chọn ít nhất 2 cầu thủ để so sánh!');
       return;
     }
-    
+
     players = savedPlayers;
-    
+
     // Load position coefficients
     const response = await fetch('/api/position-coefficients/all');
     const result = await response.json();
     positionCoefficients = result.data;
-    
+
     // Populate position selector
     populatePositionSelector();
-    
+
     // Select default position (first position of first player)
     if (players[0] && players[0].position) {
       const defaultPos = findPositionGroup(players[0].position);
@@ -72,7 +72,7 @@ async function init() {
     } else {
       selectedPosition = POSITION_GROUPS[0];
     }
-    
+
     // Initialize buffs for each player
     players.forEach(player => {
       playerBuffs[player.playerId] = {
@@ -81,14 +81,14 @@ async function init() {
         upgradeLevel: 1
       };
     });
-    
+
     // Render players
     renderPlayers();
-    
+
     // Hide loading, show content
     loadingDiv.classList.add('hidden');
     compareContent.classList.remove('hidden');
-    
+
   } catch (error) {
     console.error('Init error:', error);
     showError('Lỗi khi tải dữ liệu. Vui lòng thử lại!');
@@ -99,7 +99,7 @@ async function init() {
  * Populate position selector
  */
 function populatePositionSelector() {
-  positionSelector.innerHTML = POSITION_GROUPS.map(group => 
+  positionSelector.innerHTML = POSITION_GROUPS.map(group =>
     `<option value="${group}">${group}</option>`
   ).join('');
 }
@@ -112,21 +112,21 @@ function findPositionGroup(position) {
   if (POSITION_GROUPS.includes(position)) {
     return position;
   }
-  
+
   // Search in grouped positions
   for (const group of POSITION_GROUPS) {
     if (group.includes('/') && group.split('/').includes(position)) {
       return group;
     }
   }
-  
+
   return null;
 }
 
 /**
  * Handle position change
  */
-window.onPositionChange = function() {
+window.onPositionChange = function () {
   selectedPosition = positionSelector.value;
   renderPlayers();
 };
@@ -136,10 +136,10 @@ window.onPositionChange = function() {
  */
 function renderPlayers() {
   playersGrid.innerHTML = '';
-  
+
   // Adjust grid layout based on number of players
   const playerCount = players.length;
-  
+
   if (playerCount === 2) {
     // 2 players: centered, wider cards
     playersGrid.className = 'max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6';
@@ -150,7 +150,7 @@ function renderPlayers() {
     // 4 players: full width
     playersGrid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4';
   }
-  
+
   players.forEach(player => {
     const playerCard = createPlayerCard(player, playerCount);
     playersGrid.appendChild(playerCard);
@@ -162,7 +162,7 @@ function renderPlayers() {
  */
 function createPlayerCard(player, playerCount = 4) {
   const card = document.createElement('div');
-  
+
   // Adjust padding and styling based on player count
   const isWideLayout = playerCount === 2;
   const cardPadding = isWideLayout ? 'p-4' : 'p-3';
@@ -171,16 +171,16 @@ function createPlayerCard(player, playerCount = 4) {
     ovr: isWideLayout ? 'text-4xl' : 'text-3xl',
     stat: isWideLayout ? 'text-sm' : 'text-xs'
   };
-  
+
   card.className = `bg-white rounded-lg ${cardPadding} border border-gray-300`;
   card.id = `player-${player.playerId}`;
-  
+
   const overall = player.overallDisplay || 0;
   const salary = player.overallRating || 0;
-  
+
   // Get coefficients for selected position
   const coefficients = positionCoefficients[selectedPosition] || {};
-  
+
   // Build stats array sorted by coefficient
   const statsArray = [];
   for (const [key, config] of Object.entries(coefficients)) {
@@ -194,16 +194,16 @@ function createPlayerCard(player, playerCount = 4) {
     }
   }
   statsArray.sort((a, b) => b.coefficient - a.coefficient);
-  
+
   // Get current buffs
   const buffs = playerBuffs[player.playerId];
-  
+
   // Calculate OVR
   const ovrData = calculateOVR(statsArray, coefficients, buffs);
-  
+
   const avatarSize = isWideLayout ? 'w-24 h-24' : 'w-20 h-20';
   const badgeSize = isWideLayout ? 'text-sm' : 'text-xs';
-  
+
   card.innerHTML = `
     <!-- Player Header (Horizontal Compact) -->
     <div class="flex items-center gap-3 mb-3 pb-3 border-b-2 border-gray-100">
@@ -212,7 +212,7 @@ function createPlayerCard(player, playerCount = 4) {
         src="${player.avatarUrl || '/images/default-player.png'}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-primary flex-shrink-0"
-        onerror="this.src='/images/default-player.png'"
+        
       >
       
       <!-- Info -->
@@ -259,9 +259,9 @@ function createPlayerCard(player, playerCount = 4) {
             onchange="updateBuff('${player.playerId}', 'upgradeLevel', this.value)"
             class="w-full px-2 py-1 text-xs font-bold text-yellow-700 bg-white border-2 border-yellow-300 rounded focus:outline-none"
           >
-            ${[1,2,3,4,5,6,7,8,9,10,11,12,13].map(lvl => 
-              `<option value="${lvl}" ${buffs.upgradeLevel === lvl ? 'selected' : ''}>+${lvl} (+${UPGRADE_OVR_BONUS[lvl]} OVR)</option>`
-            ).join('')}
+            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(lvl =>
+    `<option value="${lvl}" ${buffs.upgradeLevel === lvl ? 'selected' : ''}>+${lvl} (+${UPGRADE_OVR_BONUS[lvl]} OVR)</option>`
+  ).join('')}
           </select>
         </div>
         
@@ -275,9 +275,9 @@ function createPlayerCard(player, playerCount = 4) {
             onchange="updateBuff('${player.playerId}', 'level', this.value)"
             class="w-full px-2 py-1 text-xs font-bold text-purple-700 bg-white border-2 border-purple-200 rounded focus:outline-none"
           >
-            ${[0,1,2,3,4].map(lvl => 
-              `<option value="${lvl}" ${buffs.level === lvl ? 'selected' : ''}>${lvl + 1}</option>`
-            ).join('')}
+            ${[0, 1, 2, 3, 4].map(lvl =>
+    `<option value="${lvl}" ${buffs.level === lvl ? 'selected' : ''}>${lvl + 1}</option>`
+  ).join('')}
           </select>
         </div>
         
@@ -291,9 +291,9 @@ function createPlayerCard(player, playerCount = 4) {
             onchange="updateBuff('${player.playerId}', 'teamColor', this.value)"
             class="w-full px-2 py-1 text-xs font-bold text-indigo-700 bg-white border-2 border-indigo-200 rounded focus:outline-none"
           >
-            ${[0,1,2,3,4,5,6,7,8,9].map(tc => 
-              `<option value="${tc}" ${buffs.teamColor === tc ? 'selected' : ''}>+${tc}</option>`
-            ).join('')}
+            ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(tc =>
+    `<option value="${tc}" ${buffs.teamColor === tc ? 'selected' : ''}>+${tc}</option>`
+  ).join('')}
           </select>
         </div>
       </div>
@@ -315,7 +315,7 @@ function createPlayerCard(player, playerCount = 4) {
       </table>
     </div>
   `;
-  
+
   return card;
 }
 
@@ -326,11 +326,11 @@ function renderStatsRows(statsArray, buffs) {
   const levelBuff = buffs.level || 0;
   const teamColorBuff = buffs.teamColor || 0;
   const globalBuff = levelBuff + teamColorBuff;
-  
+
   return statsArray.map(stat => {
     const totalValue = stat.baseValue + globalBuff;
     const colorClass = getStatColorClass(totalValue);
-    
+
     return `
       <tr>
         <td class="py-2 px-2 text-gray-700">${stat.name}</td>
@@ -363,35 +363,35 @@ function calculateOVR(statsArray, coefficients, buffs) {
   const teamColorBuff = buffs.teamColor || 0;
   const upgradeLvl = buffs.upgradeLevel || 1;
   const upgradeOVRBonus = UPGRADE_OVR_BONUS[upgradeLvl] || 0;
-  
+
   let totalWeighted = 0;
   let totalCoefficient = 0;
   let baseWeighted = 0;
-  
+
   for (const stat of statsArray) {
     const coefficient = stat.coefficient;
     const baseValue = stat.baseValue;
-    
+
     // Base OVR
     baseWeighted += baseValue * coefficient;
-    
+
     // With buffs
     const totalValue = baseValue + levelBuff + teamColorBuff;
     totalWeighted += totalValue * coefficient;
-    
+
     totalCoefficient += coefficient;
   }
-  
+
   const baseOVRExact = totalCoefficient > 0 ? baseWeighted / totalCoefficient : 0;
   const calculatedOVRExact = totalCoefficient > 0 ? totalWeighted / totalCoefficient : 0;
-  
+
   const baseOVR = Math.floor(baseOVRExact);
   const calculatedOVR = Math.floor(calculatedOVRExact);
-  
+
   // Final OVR with upgrade bonus
   const finalOVRExact = calculatedOVRExact + upgradeOVRBonus;
   const finalOVR = Math.floor(finalOVRExact);
-  
+
   return {
     baseOVR,
     calculatedOVR,
@@ -403,16 +403,16 @@ function calculateOVR(statsArray, coefficients, buffs) {
 /**
  * Update buff value
  */
-window.updateBuff = function(playerId, buffType, value) {
+window.updateBuff = function (playerId, buffType, value) {
   playerBuffs[playerId][buffType] = parseInt(value);
-  
+
   // Find player data
   const player = players.find(p => p.playerId === playerId);
   if (!player) return;
-  
+
   // Get coefficients
   const coefficients = positionCoefficients[selectedPosition] || {};
-  
+
   // Build stats array
   const statsArray = [];
   for (const [key, config] of Object.entries(coefficients)) {
@@ -426,13 +426,13 @@ window.updateBuff = function(playerId, buffType, value) {
     }
   }
   statsArray.sort((a, b) => b.coefficient - a.coefficient);
-  
+
   // Get buffs
   const buffs = playerBuffs[playerId];
-  
+
   // Recalculate OVR
   const ovrData = calculateOVR(statsArray, coefficients, buffs);
-  
+
   // Update OVR display
   const ovrEl = document.getElementById(`ovr-${playerId}`);
   if (ovrEl) {
@@ -443,7 +443,7 @@ window.updateBuff = function(playerId, buffType, value) {
       buffEl.innerHTML = `<span class="text-green-600 font-semibold">+${ovrData.totalBuff}</span>`;
     }
   }
-  
+
   // Update stats table
   const statsEl = document.getElementById(`stats-${playerId}`);
   if (statsEl) {
@@ -454,7 +454,7 @@ window.updateBuff = function(playerId, buffType, value) {
 /**
  * Clear and go back
  */
-window.clearAndBack = function() {
+window.clearAndBack = function () {
   localStorage.removeItem('comparePlayers');
   window.location.href = '/';
 };

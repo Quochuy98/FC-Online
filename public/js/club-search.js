@@ -30,22 +30,22 @@ function init() {
  */
 async function performSearch() {
   const club = clubNameInput.value.trim();
-  
+
   if (!club) {
     showError('Vui lòng nhập tên câu lạc bộ');
     return;
   }
-  
+
   showLoading();
-  
+
   try {
     const response = await fetch(`/api/players/by-club?club=${encodeURIComponent(club)}`);
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.error || 'Có lỗi xảy ra khi tìm kiếm');
     }
-    
+
     displayResults(data.players, club);
   } catch (err) {
     console.error('Search error:', err);
@@ -58,22 +58,22 @@ async function performSearch() {
  */
 function displayResults(players, club) {
   hideLoading();
-  
+
   if (!players || players.length === 0) {
     showEmpty(`Không tìm thấy cầu thủ nào từng chơi cho "${club}"`);
     return;
   }
-  
+
   // Update results count and club title
   resultCount.textContent = `(${players.length})`;
   clubTitle.textContent = `Cầu thủ từng chơi cho: ${club}`;
   clubTitle.classList.remove('hidden');
-  
+
   // Show grid and populate
   playersGrid.innerHTML = '';
   playersGrid.classList.remove('hidden');
   emptyState.classList.add('hidden');
-  
+
   players.forEach(player => {
     const playerCard = createPlayerCard(player, club);
     playersGrid.appendChild(playerCard);
@@ -86,18 +86,18 @@ function displayResults(players, club) {
 function createPlayerCard(player, searchedClub) {
   const li = document.createElement('div');
   li.className = 'bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-primary rounded-xl p-4 transition-all cursor-pointer flex items-center gap-4';
-  
+
   // Find the club career entry that matches the searched club
-  const clubCareer = player.clubCareer?.find(career => 
+  const clubCareer = player.clubCareer?.find(career =>
     career.club.toLowerCase().includes(searchedClub.toLowerCase())
   );
-  
+
   li.innerHTML = `
     <img 
       src="${player.avatarUrl || '/images/default-player.png'}" 
       alt="${player.name}" 
       class="w-20 h-20 rounded-full object-cover border-2 border-primary flex-shrink-0"
-      onerror="this.src='/images/default-player.png'"
+      
     >
     
     <div class="flex-1 min-w-0">
@@ -130,12 +130,12 @@ function createPlayerCard(player, searchedClub) {
       </div>
     </div>
   `;
-  
+
   // Click to view player details
   li.addEventListener('click', () => {
     window.location.href = `/player?id=${player.playerId}`;
   });
-  
+
   return li;
 }
 
