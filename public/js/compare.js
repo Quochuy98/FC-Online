@@ -23,6 +23,28 @@ const UPGRADE_OVR_BONUS = {
   1: 0, 2: 1, 3: 2, 4: 4, 5: 6, 6: 9, 7: 12,
   8: 15, 9: 18, 10: 21, 11: 23, 12: 25, 13: 27
 };
+const AVATAR_FALLBACK_URL = '/images/player-placeholder.svg';
+
+/**
+ * Normalize avatar URL and encode spaces.
+ * @param {string} url
+ * @returns {string}
+ */
+function normalizeAvatarUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\s/g, '%20');
+}
+
+/**
+ * Build same-origin avatar proxy URL.
+ * @param {string} avatarUrl
+ * @returns {string}
+ */
+function buildAvatarProxyUrl(avatarUrl) {
+  const safeUrl = normalizeAvatarUrl(avatarUrl);
+  if (!safeUrl) return AVATAR_FALLBACK_URL;
+  return `/api/avatar?url=${encodeURIComponent(safeUrl)}`;
+}
 
 // State
 let players = [];
@@ -209,10 +231,10 @@ function createPlayerCard(player, playerCount = 4) {
     <div class="flex items-center gap-3 mb-3 pb-3 border-b-2 border-gray-100">
       <!-- Avatar -->
       <img 
-        src="${player.avatarUrl}" 
+        src="${buildAvatarProxyUrl(player.avatarUrl)}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-primary flex-shrink-0"
-        
+        onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"
       >
       
       <!-- Info -->

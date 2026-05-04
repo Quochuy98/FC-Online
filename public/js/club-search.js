@@ -11,6 +11,28 @@ const emptyState = document.getElementById('emptyState');
 const playersGrid = document.getElementById('playersGrid');
 const resultCount = document.getElementById('resultCount');
 const clubTitle = document.getElementById('clubTitle');
+const AVATAR_FALLBACK_URL = '/images/player-placeholder.svg';
+
+/**
+ * Normalize avatar URL and encode spaces.
+ * @param {string} url
+ * @returns {string}
+ */
+function normalizeAvatarUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\s/g, '%20');
+}
+
+/**
+ * Build same-origin avatar proxy URL.
+ * @param {string} avatarUrl
+ * @returns {string}
+ */
+function buildAvatarProxyUrl(avatarUrl) {
+  const safeUrl = normalizeAvatarUrl(avatarUrl);
+  if (!safeUrl) return AVATAR_FALLBACK_URL;
+  return `/api/avatar?url=${encodeURIComponent(safeUrl)}`;
+}
 
 /**
  * Initialize the page
@@ -94,10 +116,10 @@ function createPlayerCard(player, searchedClub) {
 
   li.innerHTML = `
     <img 
-      src="${player.avatarUrl}" 
+      src="${buildAvatarProxyUrl(player.avatarUrl)}" 
       alt="${player.name}" 
       class="w-20 h-20 rounded-full object-cover border-2 border-primary flex-shrink-0"
-      
+      onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"
     >
     
     <div class="flex-1 min-w-0">

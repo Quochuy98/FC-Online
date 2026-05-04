@@ -5,6 +5,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const axios = require('axios');
 const { connect, isDatabaseConnected } = require('../src/database/connection');
 const { Player } = require('../src/database/playerRepository');
 const logger = require('../src/utils/logger');
@@ -128,6 +129,68 @@ app.get('/api/constants', (req, res) => {
     // Use filtered list so hidden seasons (JA, MCC, ...) don't appear in filters
     seasons: VISIBLE_SEASONS,
   });
+});
+
+/**
+ * Proxy avatar images from external servers.
+ * This avoids browser-side hotlink blocks (403) from third-party CDNs.
+ */
+app.get('/api/avatar', async (req, res) => {
+  const sendAvatarFallback = () => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.sendFile(path.join(__dirname, '../public/images/player-placeholder.svg'));
+  };
+
+  try {
+    const rawUrl = typeof req.query.url === 'string' ? req.query.url : '';
+    const avatarUrl = rawUrl.trim();
+
+    if (!avatarUrl) {
+      return sendAvatarFallback();
+    }
+
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(avatarUrl);
+    } catch (error) {
+      return sendAvatarFallback();
+    }
+
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return sendAvatarFallback();
+    }
+
+    const isAutomuaHost = parsedUrl.hostname.endsWith('automua.com');
+
+    const upstreamResponse = await axios.get(parsedUrl.toString(), {
+      responseType: 'arraybuffer',
+      timeout: 10000,
+      validateStatus: () => true,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        ...(isAutomuaHost ? {
+          Referer: 'https://automua.com/',
+          Origin: 'https://automua.com',
+        } : {}),
+      },
+    });
+
+    if (upstreamResponse.status < 200 || upstreamResponse.status >= 300) {
+      return sendAvatarFallback();
+    }
+
+    res.setHeader('Content-Type', upstreamResponse.headers['content-type'] || 'image/png');
+    res.setHeader('Cache-Control', upstreamResponse.headers['cache-control'] || 'public, max-age=3600');
+    res.send(Buffer.from(upstreamResponse.data));
+  } catch (error) {
+    logger.error('Avatar proxy error', {
+      error: error.message,
+      status: error.response?.status,
+    });
+    return sendAvatarFallback();
+  }
 });
 
 // Get all position coefficients
@@ -268,10 +331,6 @@ app.get('/api/players/search', async (req, res) => {
 
     // Build sort - prioritize by overallDisplay (default)
     const sort = {};
-
-    console.info('🚀 -----------------------------------------------------------🚀');
-    console.info('🚀 ~ api.js:272 ~ sortBy:', JSON.stringify(sortBy, null, 2));
-    console.info('🚀 -----------------------------------------------------------🚀');
 
     if (sortBy === 'overall') {
       sort.overallDisplay = sortOrder === 'asc' ? 1 : -1;

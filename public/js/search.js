@@ -9,6 +9,28 @@ let constants = null;
 let selectedSeasons = []; // Array of selected seasons for multiple filter
 let positionCoefficients = null; // Position coefficients for stat display
 let selectedPlayersForCompare = []; // Array of player IDs selected for comparison
+const AVATAR_FALLBACK_URL = '/images/player-placeholder.svg';
+
+/**
+ * Normalize avatar URL and encode spaces.
+ * @param {string} url
+ * @returns {string}
+ */
+function normalizeAvatarUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\s/g, '%20');
+}
+
+/**
+ * Build same-origin avatar proxy URL.
+ * @param {string} avatarUrl
+ * @returns {string}
+ */
+function buildAvatarProxyUrl(avatarUrl) {
+  const safeUrl = normalizeAvatarUrl(avatarUrl);
+  if (!safeUrl) return AVATAR_FALLBACK_URL;
+  return `/api/avatar?url=${encodeURIComponent(safeUrl)}`;
+}
 
 // DOM Elements
 const playerNameInput = document.getElementById('playerName');
@@ -410,10 +432,10 @@ function createPlayerCard(player) {
       
       <!-- Avatar -->
       <img 
-        src="${player.avatarUrl}" 
+        src="${buildAvatarProxyUrl(player.avatarUrl)}" 
         alt="${player.name}" 
         class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 flex-shrink-0 cursor-pointer"
-        
+        onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"
         onclick="window.location.href='/player?id=${player.playerId}'"
       >
       

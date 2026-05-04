@@ -26,6 +26,7 @@ let trainingData = {};
 // Training limits
 const MAX_TRAINED_STATS = 5; // Maximum number of stats that can be trained
 const MAX_TRAINING_VALUE = 2; // Maximum training value per stat (+2)
+const AVATAR_FALLBACK_URL = '/images/player-placeholder.svg';
 
 // Upgrade Level OVR Bonuses (based on FC Online upgrade system)
 const UPGRADE_OVR_BONUS = {
@@ -33,6 +34,44 @@ const UPGRADE_OVR_BONUS = {
   6: 8, 7: 11, 8: 15, 9: 17, 10: 19,
   11: 21, 12: 24, 13: 27
 };
+
+/**
+ * Normalize avatar URL before loading.
+ * @param {string} url
+ * @returns {string}
+ */
+function normalizeAvatarUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+  return url.trim().replace(/\s/g, '%20');
+}
+
+/**
+ * Build same-origin proxy URL for external images.
+ * @param {string} imageUrl
+ * @returns {string}
+ */
+function buildImageProxyUrl(imageUrl) {
+  const safeUrl = normalizeAvatarUrl(imageUrl);
+  if (!safeUrl) return '';
+  return `/api/avatar?url=${encodeURIComponent(safeUrl)}`;
+}
+
+/**
+ * Render player avatar with proxy and fallback.
+ * @param {HTMLImageElement} imageElement
+ * @param {string} avatarUrl
+ */
+function setPlayerAvatar(imageElement, avatarUrl) {
+  if (!imageElement) return;
+
+  const proxyUrl = buildImageProxyUrl(avatarUrl);
+  imageElement.referrerPolicy = 'no-referrer';
+  imageElement.onerror = function onAvatarError() {
+    this.onerror = null;
+    this.src = AVATAR_FALLBACK_URL;
+  };
+  imageElement.src = proxyUrl || AVATAR_FALLBACK_URL;
+}
 
 /**
  * Get color class based on stat value
@@ -84,7 +123,7 @@ async function displayPlayer(player) {
   currentPlayer = player;
 
   // Header
-  playerAvatar.src = player.avatarUrl;
+  setPlayerAvatar(playerAvatar, player.avatarUrl);
   playerName.textContent = player.name;
   playerSeasonBadge.className = `season-badge bg-${player.season}`;
   playerSeasonBadge.title = player.season;
@@ -1367,10 +1406,10 @@ function displayHiddenStats(player) {
 
     traitCard.innerHTML = `
       <img 
-        src="${trait.iconUrl || ''}" 
+        src="${buildImageProxyUrl(trait.iconUrl) || AVATAR_FALLBACK_URL}" 
         alt="${trait.name}" 
         class="w-12 h-12 flex-shrink-0"
-        onerror="this.style.display='none'"
+        onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"
       >
       <div class="flex-1 min-w-0">
         <h4 class="font-bold text-gray-800 mb-1">${trait.name || 'Unknown'}</h4>
