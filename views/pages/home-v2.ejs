@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/badge.css">
+  <script>
+    tailwind.config = { theme: { extend: { colors: { primary: '#667eea', secondary: '#764ba2' } } } };
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 1s linear infinite; }
+    #mainStatsTable tbody tr:nth-child(even) { background-color: #f9fafb; }
+    .season-logo { display: inline-block; flex: 0 0 auto; background-repeat: no-repeat; image-rendering: auto; }
+    .season-logo-fallback { display: inline-flex; width: auto !important; min-width: 42px; height: 24px !important; align-items: center; justify-content: center; padding: 0 8px; border-radius: 6px; background: #312e81; color: white; font-size: 11px; font-weight: 800; }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <%- include('../partials/header') %>
+
+  <main class="container mx-auto px-4 py-8 max-w-7xl">
+    <section class="rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 md:p-10 text-white shadow-xl mb-7">
+      <div class="max-w-3xl">
+        <span class="inline-flex px-3 py-1 rounded-full bg-white/15 text-sm font-semibold mb-4">Đào tạo cầu thủ V2</span>
+        <h1 class="text-3xl md:text-5xl font-black mb-3">Dán link, xem chỉ số và đào tạo ngay</h1>
+        <p class="text-indigo-100 mb-6">Dữ liệu được lấy trực tiếp từ FIFA Addict theo yêu cầu. Hệ thống không đọc hoặc lưu cầu thủ vào MongoDB.</p>
+        <form id="playerImportForm" class="flex flex-col md:flex-row gap-3">
+          <input id="playerUrl" type="url" required
+            placeholder="https://vn.fifaaddict.com/fo4db/pidaavmwaaqy"
+            class="flex-1 rounded-xl px-4 py-3 text-slate-900 border-2 border-transparent focus:border-amber-300 focus:outline-none">
+          <button id="importButton" type="submit" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-7 py-3 transition-colors">
+            Lấy dữ liệu cầu thủ
+          </button>
+        </form>
+        <p id="importHint" class="text-sm text-indigo-100 mt-3">Hỗ trợ link dạng <strong>vn.fifaaddict.com/fo4db/pid...</strong></p>
+      </div>
+    </section>
+
+    <div id="loading" class="hidden flex-col items-center justify-center py-16 bg-white rounded-xl border border-slate-200">
+      <div class="w-14 h-14 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p class="text-slate-600 text-lg">Đang lấy dữ liệu mới nhất từ FIFA Addict...</p>
+    </div>
+    <div id="error" class="hidden text-center py-12 bg-white rounded-xl border border-red-200"></div>
+
+    <div id="playerDetails" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <img id="playerAvatar" src="" alt="Player Avatar" class="w-48 h-48 object-contain">
+          <div class="flex-1 text-center md:text-left">
+            <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
+              <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">LIVE DATA</span>
+              <span id="playerSeasonName" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold"></span>
+            </div>
+            <div class="flex items-center justify-center md:justify-start gap-3 mb-3">
+              <span id="playerSeasonBadge" class="season-badge flex-shrink-0"></span>
+              <h2 id="playerName" class="text-4xl font-black text-slate-800"></h2>
+            </div>
+            <div id="playerMeta" class="text-sm text-slate-600 mt-4 mb-4"></div>
+            <div id="playerPersonalInfo" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-5 text-left"></div>
+            <h4 class="text-sm font-semibold text-slate-500 uppercase mb-3">Vị trí & chỉ số</h4>
+            <div id="playerPositions" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-3xl font-bold text-slate-800 mb-6 pb-4 border-b">📊 Chỉ số và đào tạo</h3>
+        <div class="mb-6 border-b border-slate-200"><nav class="flex flex-wrap -mb-px gap-2" id="statsTabs"></nav></div>
+        <div id="statsTabsContent"></div>
+      </div>
+
+      <div id="hiddenStatsSection" class="hidden bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-2xl font-bold text-slate-800 mb-5 pb-3 border-b">🔒 Chỉ số ẩn / Đặc điểm</h3>
+        <div id="hiddenStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div id="clubCareerSection" class="hidden bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-2xl font-bold text-slate-800 mb-4 pb-3 border-b">🏆 Sự nghiệp câu lạc bộ</h3>
+        <div id="clubCareer"></div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script>window.PLAYER_TRAINING_V2 = true;</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/player-detail.js"></script>
+</body>
+</html>

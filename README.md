@@ -1,6 +1,21 @@
-# FC Online Player Database
+# FC Online Training Lab V2
 
-🎮 **Full-stack application** để crawl và tra cứu thông tin cầu thủ FC Online
+🎮 **Ứng dụng đào tạo cầu thủ FC Online từ dữ liệu FIFA Addict theo thời gian thực**
+
+## V2 hiện tại
+
+- Trang chủ `/` nhận link dạng `https://vn.fifaaddict.com/fo4db/pid...`.
+- Server lấy thông tin cá nhân, ảnh, vị trí, toàn bộ chỉ số, trait và sự nghiệp trực tiếp từ FIFA Addict.
+- Dữ liệu chỉ được cache ngắn trong bộ nhớ, không đọc hoặc ghi MongoDB.
+- Giao diện tìm kiếm/database cũ được giữ tại `/legacy`; các API cũ chỉ kết nối MongoDB khi được gọi.
+
+```bash
+npm install
+npm start
+# Mở http://localhost:3000
+```
+
+MongoDB không còn là yêu cầu để chạy trang đào tạo V2.
 
 ## 📦 Dự án bao gồm
 
@@ -42,7 +57,7 @@
 
 ## Yêu cầu hệ thống
 
-- Node.js >= 14.x
+- Node.js >= 18.x
 - MongoDB >= 4.x
 
 ## Cài đặt
@@ -82,11 +97,8 @@ BASE_URL=https://automua.com
 ### Option 1: Chạy Web Application (Khuyến nghị)
 
 ```bash
-# 1. Đảm bảo đã có dữ liệu (crawl trước)
-npm start season ICON
-
-# 2. Khởi động web server
-npm run server
+# Khởi động web server V2 (không cần crawl trước)
+npm start
 
 # 3. Mở trình duyệt
 # Truy cập: http://localhost:3000
@@ -98,10 +110,10 @@ npm run server
 
 ```bash
 # Crawl một mùa giải
-npm start season ICON
+npm run crawl -- season ICON
 
 # Crawl nhiều mùa với auto-resume
-npm start seasons 10
+npm run crawl -- seasons 10
 ```
 
 ## Sử dụng
@@ -112,30 +124,30 @@ npm start seasons 10
 
 ```bash
 # Tự động crawl tuần tự tất cả 15 vị trí: ST → LW → RW → ... → GK
-npm start season EL
+npm run crawl -- season EL
 
 # Crawl mùa ICON
-npm start season ICON
+npm run crawl -- season ICON
 
 # Crawl mùa 25TY  
-npm start season 25TY
+npm run crawl -- season 25TY
 ```
 
 **Lưu ý quan trọng:** Mỗi lần crawl sẽ lấy **TẤT CẢ** cầu thủ có thẻ mùa đó. Ví dụ:
-- `npm start season EL` → Lấy tất cả cầu thủ có thẻ EL
-- `npm start season ICON` → Lấy tất cả cầu thủ có thẻ ICON
+- `npm run crawl -- season EL` → Lấy tất cả cầu thủ có thẻ EL
+- `npm run crawl -- season ICON` → Lấy tất cả cầu thủ có thẻ ICON
 
 ### Crawl một vị trí cụ thể cho một mùa giải
 
 ```bash
-npm start position ST EL
+npm run crawl -- position ST EL
 ```
 
 ### Crawl nhiều vị trí và mùa giải
 
 ```bash
 # Crawl 3 vị trí tấn công cho 3 mùa giải riêng biệt
-npm start custom ST,LW,RW EL,ICON,ICONTM
+npm run crawl -- custom ST,LW,RW EL,ICON,ICONTM
 ```
 
 **Chi tiết về URL parameters:** Xem [URL_PARAMS_EXPLAINED.md](./URL_PARAMS_EXPLAINED.md)
@@ -143,13 +155,13 @@ npm start custom ST,LW,RW EL,ICON,ICONTM
 ### Crawl toàn bộ (WARNING: Sẽ mất rất nhiều thời gian!)
 
 ```bash
-npm start all
+npm run crawl -- all
 ```
 
 ### Force re-crawl (cập nhật lại dữ liệu đã có)
 
 ```bash
-npm start season EL --force
+npm run crawl -- season EL --force
 ```
 
 ### Xem hướng dẫn

@@ -15,6 +15,7 @@
     "crawl:custom": "node src/index.js custom",
     "crawl:all": "node src/index.js all",
     "create-text-index": "node scripts/createTextIndex.js",
+    "test": "node --test",
     "test:scraper": "node examples/testScraper.js",
     "quickstart": "node examples/quickStart.js",
     "example:query": "node examples/queryStatsExample.js"

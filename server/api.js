@@ -9,6 +9,7 @@ const axios = require('axios');
 const { connect, isDatabaseConnected } = require('../src/database/connection');
 const { Player } = require('../src/database/playerRepository');
 const logger = require('../src/utils/logger');
+const { getPlayerFromUrl } = require('../src/services/fifaAddictPlayerService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -22,9 +23,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Ensure MongoDB connection for serverless (DigitalOcean)
-// This middleware ensures DB is connected before handling requests
-app.use(async (req, res, next) => {
+// V2 does not use MongoDB. Legacy database endpoints opt into this middleware.
+async function requireDatabase(req, res, next) {
   try {
     if (!isDatabaseConnected()) {
       await connect();
@@ -37,7 +37,7 @@ app.use(async (req, res, next) => {
       error: 'Database connection failed',
     });
   }
-});
+}
 
 // Constants
 const POSITIONS = [
@@ -90,9 +90,17 @@ const VISIBLE_SEASONS = SEASONS.filter((s) => !HIDDEN_UI_SEASONS.includes(s));
 
 // Home page (Search players)
 app.get('/', (req, res) => {
+  res.render('pages/home-v2', {
+    title: 'Đào tạo cầu thủ FC Online',
+    currentPage: 'training-v2'
+  });
+});
+
+// Legacy database search remains available while V2 is being adopted.
+app.get('/legacy', (req, res) => {
   res.render('pages/home', {
-    title: 'FC Online Player Search - Tra cứu cầu thủ',
-    currentPage: 'home'
+    title: 'FC Online Player Search - Legacy',
+    currentPage: 'legacy'
   });
 });
 
@@ -262,8 +270,20 @@ app.get('/api/position-coefficients/:position', (req, res) => {
   }
 });
 
+// V2: scrape a FIFA Addict player on demand; no database read/write.
+app.post('/api/v2/player/import', async (req, res) => {
+  try {
+    const player = await getPlayerFromUrl(req.body && req.body.url);
+    res.json({ success: true, data: player });
+  } catch (error) {
+    logger.warn('FIFA Addict import failed', { error: error.message });
+    const inputError = /link|hỗ trợ|dạng/i.test(error.message);
+    res.status(inputError ? 400 : 502).json({ success: false, error: error.message });
+  }
+});
+
 // Search players
-app.get('/api/players/search', async (req, res) => {
+app.get('/api/players/search', requireDatabase, async (req, res) => {
   try {
     const {
       name,
@@ -404,7 +424,7 @@ app.get('/api/players/search', async (req, res) => {
 });
 
 // Get players by club career
-app.get('/api/players/by-club', async (req, res) => {
+app.get('/api/players/by-club', requireDatabase, async (req, res) => {
   try {
     const { club } = req.query;
 
@@ -445,7 +465,7 @@ app.get('/api/players/by-club', async (req, res) => {
 });
 
 // Get player by ID
-app.get('/api/players/:id', async (req, res) => {
+app.get('/api/players/:id', requireDatabase, async (req, res) => {
   try {
     const { id } = req.params;
     const player = await Player.findOne({ playerId: id }).lean();
@@ -471,7 +491,7 @@ app.get('/api/players/:id', async (req, res) => {
 });
 
 // Get stats comparison
-app.get('/api/players/:id/compare', async (req, res) => {
+app.get('/api/players/:id/compare', requireDatabase, async (req, res) => {
   try {
     const { id } = req.params;
     const { position, season } = req.query;
@@ -524,7 +544,7 @@ app.get('/api/players/:id/compare', async (req, res) => {
 });
 
 // Get aggregate stats
-app.get('/api/stats/aggregate', async (req, res) => {
+app.get('/api/stats/aggregate', requireDatabase, async (req, res) => {
   try {
     const { groupBy = 'season' } = req.query;
 
@@ -576,15 +596,11 @@ app.get('/api/stats/aggregate', async (req, res) => {
  */
 async function startServer() {
   try {
-    // Connect to MongoDB
-    await connect();
-    logger.info('Connected to MongoDB');
-
-    // Start Express server
+    // V2 starts without MongoDB; legacy endpoints connect lazily when requested.
     app.listen(PORT, () => {
       logger.info(`🚀 API Server running on http://localhost:${PORT}`);
-      logger.info(`   - API: http://localhost:${PORT}/api`);
-      logger.info(`   - Search: http://localhost:${PORT}`);
+      logger.info(`   - Training V2: http://localhost:${PORT}`);
+      logger.info(`   - Legacy search: http://localhost:${PORT}/legacy`);
     });
   } catch (error) {
     logger.error('Failed to start server', { error: error.message });

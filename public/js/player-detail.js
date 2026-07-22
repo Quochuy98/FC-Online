@@ -23,6 +23,15 @@ let currentPlayer = null;
 // Store training values for each position tab
 let trainingData = {};
 
+function escapeHtml(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Training limits
 const MAX_TRAINED_STATS = 5; // Maximum number of stats that can be trained
 const MAX_TRAINING_VALUE = 2; // Maximum training value per stat (+2)
@@ -90,6 +99,10 @@ function getStatColorClass(value) {
  */
 async function init() {
   try {
+    if (window.PLAYER_TRAINING_V2) {
+      initV2Import();
+      return;
+    }
     // Get player ID from URL
     const params = Utils.getUrlParams();
     const id = params.id;
@@ -116,6 +129,91 @@ async function init() {
   }
 }
 
+function initV2Import() {
+  const form = document.getElementById('playerImportForm');
+  const input = document.getElementById('playerUrl');
+  const initialUrl = new URLSearchParams(window.location.search).get('url');
+  if (!form || !input) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const url = input.value.trim();
+    errorDiv.classList.add('hidden');
+    playerDetailsDiv.classList.add('hidden');
+    loadingDiv.classList.remove('hidden');
+    loadingDiv.classList.add('flex');
+    document.getElementById('importButton').disabled = true;
+
+    try {
+      const response = await fetch('/api/v2/player/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Không thể lấy dữ liệu cầu thủ');
+
+      await displayPlayer(result.data);
+      const seasonName = document.getElementById('playerSeasonName');
+      const playerMeta = document.getElementById('playerMeta');
+      if (seasonName) seasonName.textContent = result.data.seasonName || result.data.season;
+      if (playerMeta) {
+        playerMeta.textContent = [
+          result.data.club, result.data.nation,
+          result.data.height ? `${result.data.height} cm` : '',
+          result.data.weight ? `${result.data.weight} kg` : '',
+          result.data.preferredFoot ? `Chân thuận: ${result.data.preferredFoot}` : '',
+          result.data.weakFoot ? `Chân không thuận: ${result.data.weakFoot}` : '',
+        ].filter(Boolean).join(' · ');
+      }
+      renderV2PersonalInfo(result.data);
+      history.replaceState({}, '', `/?url=${encodeURIComponent(url)}`);
+      playerDetailsDiv.classList.remove('hidden');
+      playerDetailsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      showError(error.message || 'Không thể tải thông tin cầu thủ. Vui lòng thử lại!');
+    } finally {
+      loadingDiv.classList.add('hidden');
+      loadingDiv.classList.remove('flex');
+      document.getElementById('importButton').disabled = false;
+    }
+  });
+
+  if (initialUrl) {
+    input.value = initialUrl;
+    form.requestSubmit();
+  }
+}
+
+function renderV2PersonalInfo(player) {
+  const container = document.getElementById('playerPersonalInfo');
+  if (!container) return;
+  const fields = [
+    ['Ngày sinh', player.birthdate], ['Tuổi', player.age], ['Số áo', player.shirtNumber],
+    ['CLB', player.club], ['Quốc gia', player.nation], ['Giải đấu', player.league],
+    ['Chiều cao', player.height ? `${player.height} cm` : null],
+    ['Cân nặng', player.weight ? `${player.weight} kg` : null],
+    ['Chân thuận', player.preferredFoot], ['Chân không thuận', player.weakFoot],
+    ['Kỹ thuật', player.skillMoves], ['Lương', player.salary], ['Thể hình', player.bodyType],
+    ['Công/Thủ', [player.workRateAttack, player.workRateDefense].filter(Boolean).join('/')],
+    ['Danh tiếng', player.reputation],
+  ].filter(([, value]) => value !== null && value !== undefined && value !== '');
+
+  container.innerHTML = '';
+  fields.forEach(([label, value]) => {
+    const item = document.createElement('div');
+    item.className = 'rounded-lg bg-slate-50 border border-slate-200 px-3 py-2';
+    const labelNode = document.createElement('div');
+    labelNode.className = 'text-[11px] uppercase font-semibold text-slate-400';
+    labelNode.textContent = label;
+    const valueNode = document.createElement('div');
+    valueNode.className = 'text-sm font-bold text-slate-700 truncate';
+    valueNode.textContent = String(value);
+    item.append(labelNode, valueNode);
+    container.appendChild(item);
+  });
+}
+
 /**
  * Display player information
  */
@@ -125,7 +223,19 @@ async function displayPlayer(player) {
   // Header
   setPlayerAvatar(playerAvatar, player.avatarUrl);
   playerName.textContent = player.name;
-  playerSeasonBadge.className = `season-badge bg-${player.season}`;
+  playerSeasonBadge.removeAttribute('style');
+  playerSeasonBadge.textContent = '';
+  if (player.seasonBadge) {
+    playerSeasonBadge.className = 'season-logo';
+    playerSeasonBadge.style.backgroundImage = `url("${player.seasonBadge.spriteUrl}")`;
+    playerSeasonBadge.style.backgroundPosition = player.seasonBadge.backgroundPosition;
+    playerSeasonBadge.style.backgroundSize = player.seasonBadge.backgroundSize;
+    playerSeasonBadge.style.width = `${player.seasonBadge.width || 30}px`;
+    playerSeasonBadge.style.height = `${player.seasonBadge.height || 24}px`;
+  } else {
+    playerSeasonBadge.className = `season-badge bg-${player.season} season-logo-fallback`;
+    playerSeasonBadge.textContent = player.season;
+  }
   playerSeasonBadge.title = player.season;
 
   // Display all positions with ratings
@@ -1407,13 +1517,13 @@ function displayHiddenStats(player) {
     traitCard.innerHTML = `
       <img 
         src="${buildImageProxyUrl(trait.iconUrl) || AVATAR_FALLBACK_URL}" 
-        alt="${trait.name}" 
+        alt="${escapeHtml(trait.name)}"
         class="w-12 h-12 flex-shrink-0"
         onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"
       >
       <div class="flex-1 min-w-0">
-        <h4 class="font-bold text-gray-800 mb-1">${trait.name || 'Unknown'}</h4>
-        <p class="text-sm text-gray-600">${trait.description || ''}</p>
+        <h4 class="font-bold text-gray-800 mb-1">${escapeHtml(trait.name || 'Unknown')}</h4>
+        <p class="text-sm text-gray-600">${escapeHtml(trait.description || '')}</p>
       </div>
     `;
 
@@ -1455,12 +1565,12 @@ function displayClubCareer(player) {
 
     clubItem.innerHTML = `
       <div class="flex-shrink-0 w-28 text-xs font-semibold text-gray-500 text-right">
-        ${career.period || 'N/A'}
+        ${escapeHtml(career.period || 'N/A')}
       </div>
       <div class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary group-hover:scale-150 transition-transform"></div>
       <div class="flex-1 min-w-0">
         <div class="text-sm font-semibold text-gray-800 truncate">
-          ${career.club || 'Unknown Club'}
+          ${escapeHtml(career.club || 'Unknown Club')}
         </div>
       </div>
     `;
@@ -1478,7 +1588,7 @@ function showError(message) {
   errorDiv.classList.remove('hidden');
   errorDiv.innerHTML = `
     <h2 class="text-3xl font-bold text-red-600 mb-4">❌ Lỗi</h2>
-    <p class="text-gray-700 text-lg mb-6">${message}</p>
+    <p class="text-gray-700 text-lg mb-6">${escapeHtml(message)}</p>
     <a 
       href="/" 
       class="inline-block px-8 py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 transition-all no-underline"
