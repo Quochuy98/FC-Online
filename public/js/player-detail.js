@@ -36,6 +36,7 @@ function escapeHtml(value) {
 const MAX_TRAINED_STATS = 5; // Maximum number of stats that can be trained
 const MAX_TRAINING_VALUE = 2; // Maximum training value per stat (+2)
 const AVATAR_FALLBACK_URL = '/images/player-placeholder.svg';
+let positionCoefficientsPromise = null;
 
 // Upgrade Level OVR Bonuses (based on FC Online upgrade system)
 const UPGRADE_OVR_BONUS = {
@@ -45,41 +46,35 @@ const UPGRADE_OVR_BONUS = {
 };
 
 /**
- * Normalize avatar URL before loading.
- * @param {string} url
- * @returns {string}
- */
-function normalizeAvatarUrl(url) {
-  if (!url || typeof url !== 'string') return '';
-  return url.trim().replace(/\s/g, '%20');
-}
-
-/**
- * Build same-origin proxy URL for external images.
- * @param {string} imageUrl
- * @returns {string}
- */
-function buildImageProxyUrl(imageUrl) {
-  const safeUrl = normalizeAvatarUrl(imageUrl);
-  if (!safeUrl) return '';
-  return `/api/avatar?url=${encodeURIComponent(safeUrl)}`;
-}
-
-/**
- * Render player avatar with proxy and fallback.
+ * Render player avatar with a local fallback.
  * @param {HTMLImageElement} imageElement
  * @param {string} avatarUrl
  */
 function setPlayerAvatar(imageElement, avatarUrl) {
   if (!imageElement) return;
 
-  const proxyUrl = buildImageProxyUrl(avatarUrl);
   imageElement.referrerPolicy = 'no-referrer';
   imageElement.onerror = function onAvatarError() {
     this.onerror = null;
     this.src = AVATAR_FALLBACK_URL;
   };
-  imageElement.src = proxyUrl || AVATAR_FALLBACK_URL;
+  imageElement.src = avatarUrl || AVATAR_FALLBACK_URL;
+}
+
+async function getPositionCoefficients(position) {
+  if (!positionCoefficientsPromise) {
+    positionCoefficientsPromise = fetch('/config/positionCoefficients.json').then((response) => {
+      if (!response.ok) throw new Error('Không thể tải hệ số vị trí');
+      return response.json();
+    });
+  }
+
+  const allCoefficients = await positionCoefficientsPromise;
+  if (allCoefficients[position]) return allCoefficients[position];
+  const groupKey = Object.keys(allCoefficients).find((key) =>
+    key.split('/').includes(position)
+  );
+  return groupKey ? allCoefficients[groupKey] : null;
 }
 
 /**
@@ -98,38 +93,10 @@ function getStatColorClass(value) {
  * Initialize page
  */
 async function init() {
-  try {
-    if (window.PLAYER_TRAINING_V2) {
-      initV2Import();
-      return;
-    }
-    // Get player ID from URL
-    const params = Utils.getUrlParams();
-    const id = params.id;
-
-    if (!id) {
-      showError('Không tìm thấy ID cầu thủ');
-      return;
-    }
-
-    // Fetch player data
-    const result = await PlayerAPI.getPlayer(id);
-    const player = result.data;
-
-    // Display player
-    displayPlayer(player);
-
-    // Hide loading
-    loadingDiv.classList.add('hidden');
-    playerDetailsDiv.classList.remove('hidden');
-  } catch (error) {
-    console.error('Error loading player:', error);
-    loadingDiv.classList.add('hidden');
-    showError('Không thể tải thông tin cầu thủ. Vui lòng thử lại!');
-  }
+  initImport();
 }
 
-function initV2Import() {
+function initImport() {
   const form = document.getElementById('playerImportForm');
   const input = document.getElementById('playerUrl');
   const initialUrl = new URLSearchParams(window.location.search).get('url');
@@ -145,7 +112,7 @@ function initV2Import() {
     document.getElementById('importButton').disabled = true;
 
     try {
-      const response = await fetch('/api/v2/player/import', {
+      const response = await fetch('/api/player/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
@@ -427,11 +394,8 @@ async function loadTrainingPosition(positionGroup, playerStats) {
   `;
 
   try {
-    // Fetch coefficients for this position group
-    const response = await fetch(`/api/position-coefficients/${encodeURIComponent(positionGroup)}`);
-    const result = await response.json();
-
-    if (!result.success) {
+    const coefficients = await getPositionCoefficients(positionGroup);
+    if (!coefficients) {
       trainingContentDiv.innerHTML = `
         <p class="text-center text-red-500 py-8">
           Không tìm thấy hệ số cho vị trí ${positionGroup}
@@ -440,7 +404,6 @@ async function loadTrainingPosition(positionGroup, playerStats) {
       return;
     }
 
-    const coefficients = result.data.coefficients;
     const contentId = 'trainingTab';
 
     // Sort stats by coefficient (descending)
@@ -710,13 +673,12 @@ function displayAllStats(stats, tableId) {
  */
 async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
   try {
-    const response = await fetch(`/api/position-coefficients/${position}`);
-    const result = await response.json();
+    const coefficients = await getPositionCoefficients(position);
 
     const content = document.getElementById(contentId);
     if (!content) return;
 
-    if (!result.success) {
+    if (!coefficients) {
       content.innerHTML = `
         <p class="text-center text-red-500 py-8">
           Không tìm thấy hệ số cho vị trí ${position}
@@ -724,8 +686,6 @@ async function fetchAndDisplayPositionStats(position, playerStats, contentId) {
       `;
       return;
     }
-
-    const coefficients = result.data.coefficients;
 
     // Sort stats by coefficient (descending)
     const statsWithCoef = [];
@@ -1516,7 +1476,7 @@ function displayHiddenStats(player) {
 
     traitCard.innerHTML = `
       <img 
-        src="${buildImageProxyUrl(trait.iconUrl) || AVATAR_FALLBACK_URL}" 
+        src="${trait.iconUrl || AVATAR_FALLBACK_URL}"
         alt="${escapeHtml(trait.name)}"
         class="w-12 h-12 flex-shrink-0"
         onerror="this.onerror=null;this.src='${AVATAR_FALLBACK_URL}'"

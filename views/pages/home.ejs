@@ -1,227 +1,88 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Badge CSS for season sprites -->
-    <link rel="stylesheet" href="/css/badge.css">
-    
-    <!-- Custom Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#667eea',
-                        secondary: '#764ba2',
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-        #seasonsContainer {
-            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        }
-        #seasonArrow {
-            transition: transform 0.2s ease;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { colors: { primary: '#667eea', secondary: '#764ba2' } } } };
+  </script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-spin { animation: spin 1s linear infinite; }
+    #mainStatsTable tbody tr:nth-child(even) { background-color: #f9fafb; }
+    .season-logo { display: inline-block; flex: 0 0 auto; background-repeat: no-repeat; image-rendering: auto; }
+    .season-logo-fallback { display: inline-flex; width: auto !important; min-width: 42px; height: 24px !important; align-items: center; justify-content: center; padding: 0 8px; border-radius: 6px; background: #312e81; color: white; font-size: 11px; font-weight: 800; }
+  </style>
 </head>
-<body class="bg-white min-h-screen">
-    <%- include('../partials/header') %>
-    
-    <div class="container mx-auto px-4 py-6 max-w-7xl">
-    <!-- Page Title -->
-    <div class="p-6 mb-6 text-center border-b border-gray-200">
-        <h2 class="text-4xl font-bold text-primary mb-3">🎮 Tìm kiếm cầu thủ</h2>
-        <p class="text-gray-600 text-lg">Tra cứu thông tin chi tiết cầu thủ FC Online</p>
+<body class="bg-slate-50 min-h-screen">
+  <%- include('../partials/header') %>
+
+  <main class="container mx-auto px-4 py-8 max-w-7xl">
+    <section class="rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-700 p-6 md:p-10 text-white shadow-xl mb-7">
+      <div class="max-w-3xl">
+        <span class="inline-flex px-3 py-1 rounded-full bg-white/15 text-sm font-semibold mb-4">Đào tạo cầu thủ</span>
+        <h1 class="text-3xl md:text-5xl font-black mb-3">Dán link, xem chỉ số và đào tạo ngay</h1>
+        <p class="text-indigo-100 mb-6">Dữ liệu được lấy trực tiếp từ FIFA Addict theo yêu cầu. Hệ thống không đọc hoặc lưu cầu thủ vào MongoDB.</p>
+        <form id="playerImportForm" class="flex flex-col md:flex-row gap-3">
+          <input id="playerUrl" type="url" required
+            placeholder="https://vn.fifaaddict.com/fo4db/pidaavmwaaqy"
+            class="flex-1 rounded-xl px-4 py-3 text-slate-900 border-2 border-transparent focus:border-amber-300 focus:outline-none">
+          <button id="importButton" type="submit" class="rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold px-7 py-3 transition-colors">
+            Lấy dữ liệu cầu thủ
+          </button>
+        </form>
+        <p id="importHint" class="text-sm text-indigo-100 mt-3">Hỗ trợ link dạng <strong>vn.fifaaddict.com/fo4db/pid...</strong></p>
+      </div>
+    </section>
+
+    <div id="loading" class="hidden flex-col items-center justify-center py-16 bg-white rounded-xl border border-slate-200">
+      <div class="w-14 h-14 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4"></div>
+      <p class="text-slate-600 text-lg">Đang lấy dữ liệu mới nhất từ FIFA Addict...</p>
     </div>
+    <div id="error" class="hidden text-center py-12 bg-white rounded-xl border border-red-200"></div>
 
-    <!-- Search Filters -->
-    <div class="bg-gray-50 rounded-lg border border-gray-300 p-6 mb-6">
-        <!-- Search Box -->
-        <div class="flex flex-col sm:flex-row gap-3 mb-6">
-            <input 
-                type="text" 
-                id="playerName" 
-                placeholder="Tên cầu thủ (ví dụ: Ronaldo)"
-                class="flex-1 px-5 py-4 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary transition-all"
-            >
-            <button 
-                id="searchBtn" 
-                class="px-8 py-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg transition-all"
-            >
-                🔍 Tìm kiếm
-            </button>
-            <button 
-                id="clearBtn" 
-                class="px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
-            >
-                ✖ Xóa
-            </button>
-        </div>
-
-        <!-- Filters Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
-            <!-- Position Filter -->
-            <div>
-                <label class="block font-semibold text-gray-700 mb-2">Vị trí:</label>
-                <select 
-                    id="positionFilter"
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
-                >
-                    <option value="">Tất cả vị trí</option>
-                </select>
+    <div id="playerDetails" class="hidden space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <img id="playerAvatar" src="" alt="Player Avatar" class="w-48 h-48 object-contain">
+          <div class="flex-1 text-center md:text-left">
+            <div class="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
+              <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold">LIVE DATA</span>
+              <span id="playerSeasonName" class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold"></span>
             </div>
-
-            <!-- Overall Range -->
-            <div>
-                <label class="block font-semibold text-gray-700 mb-2">Overall:</label>
-                <div class="flex items-center gap-2">
-                    <input 
-                        type="number" 
-                        id="minOverall" 
-                        placeholder="Min" 
-                        min="0" 
-                        max="120"
-                        class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
-                    >
-                    <span class="text-gray-400">-</span>
-                    <input 
-                        type="number" 
-                        id="maxOverall" 
-                        placeholder="Max" 
-                        min="0" 
-                        max="120"
-                        class="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-primary transition-colors"
-                    >
-                </div>
+            <div class="flex items-center justify-center md:justify-start gap-3 mb-3">
+              <span id="playerSeasonBadge" class="season-badge flex-shrink-0"></span>
+              <h2 id="playerName" class="text-4xl font-black text-slate-800"></h2>
             </div>
+            <div id="playerMeta" class="text-sm text-slate-600 mt-4 mb-4"></div>
+            <div id="playerPersonalInfo" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-5 text-left"></div>
+            <h4 class="text-sm font-semibold text-slate-500 uppercase mb-3">Vị trí & chỉ số</h4>
+            <div id="playerPositions" class="flex flex-wrap justify-center md:justify-start gap-2"></div>
+          </div>
         </div>
+      </div>
 
-        <!-- Sort Info -->
-        <div class="text-sm text-gray-500 mb-6">
-            <span class="inline-flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
-                </svg>
-                Tự động sắp xếp theo Overall cao → thấp
-            </span>
-        </div>
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-3xl font-bold text-slate-800 mb-6 pb-4 border-b">📊 Chỉ số và đào tạo</h3>
+        <div class="mb-6 border-b border-slate-200"><nav class="flex flex-wrap -mb-px gap-2" id="statsTabs"></nav></div>
+        <div id="statsTabsContent"></div>
+      </div>
 
-        <!-- Season Badges (Quick Filter - Collapsible) -->
-        <div class="border-t-2 border-gray-100 pt-6">
-            <button 
-                id="toggleSeasons"
-                class="w-full flex items-center justify-between font-semibold text-gray-700 mb-4 hover:text-primary transition-colors"
-                onclick="toggleSeasonsCollapse()"
-            >
-                <span class="flex items-center gap-2">
-                    <svg id="seasonArrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                    Mùa giải (cho phép chọn nhiều)
-                </span>
-                <span class="text-sm font-semibold text-primary" id="seasonsCount">0/0 mùa</span>
-            </button>
-            <div id="seasonsContainer" class="overflow-hidden transition-all duration-300 ease-in-out" style="max-height: 0;">
-                <div class="flex flex-wrap gap-3 mb-3" id="quickSeasons">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-                <div class="text-xs text-gray-500 italic">
-                    💡 Click để chọn/bỏ chọn mùa. Có thể chọn nhiều mùa cùng lúc.
-                </div>
-            </div>
-        </div>
+      <div id="hiddenStatsSection" class="hidden bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-2xl font-bold text-slate-800 mb-5 pb-3 border-b">🔒 Chỉ số ẩn / Đặc điểm</h3>
+        <div id="hiddenStats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div id="clubCareerSection" class="hidden bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+        <h3 class="text-2xl font-bold text-slate-800 mb-4 pb-3 border-b">🏆 Sự nghiệp câu lạc bộ</h3>
+        <div id="clubCareer"></div>
+      </div>
     </div>
+  </main>
 
-    <!-- Results Section -->
-    <div class="bg-white rounded-lg border border-gray-300 p-6">
-        <!-- Results Header -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b-2 border-gray-100">
-            <h2 class="text-3xl font-bold text-gray-800">
-                Kết quả <span id="resultCount" class="text-primary text-2xl">(0)</span>
-            </h2>
-            <div id="paginationInfo" class="text-gray-600"></div>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loading" class="hidden text-center py-16">
-            <div class="inline-block w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-4"></div>
-            <p class="text-gray-600 text-lg">Đang tìm kiếm...</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="error" class="hidden text-center py-16 text-red-500 bg-red-50 rounded-lg border border-red-200"></div>
-
-        <!-- Results List -->
-        <div id="playersGrid" class="space-y-3 mb-8">
-            <!-- Players will be populated here -->
-        </div>
-
-        <!-- Pagination -->
-        <div id="pagination" class="flex justify-center gap-2 flex-wrap"></div>
-    </div>
-</div>
-
-<!-- Floating Compare Button -->
-<div id="compareBtn" class="hidden fixed bottom-8 right-8 z-50">
-    <button 
-        onclick="goToCompare()"
-        class="bg-primary hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-full shadow-2xl transition-all flex items-center gap-3"
-    >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-        </svg>
-        <span>So sánh (<span id="compareCount">0</span>)</span>
-    </button>
-</div>
-
-<script>
-    // Collapsible seasons logic
-    let seasonsOpen = false;
-    
-    function toggleSeasonsCollapse() {
-        seasonsOpen = !seasonsOpen;
-        const container = document.getElementById('seasonsContainer');
-        const arrow = document.getElementById('seasonArrow');
-        
-        if (seasonsOpen) {
-            // Open - auto height
-            container.style.maxHeight = container.scrollHeight + 'px';
-            arrow.style.transform = 'rotate(180deg)';
-        } else {
-            // Close
-            container.style.maxHeight = '0';
-            arrow.style.transform = 'rotate(0deg)';
-        }
-    }
-    
-    // Auto-update max-height when content changes
-    function updateSeasonsHeight() {
-        const container = document.getElementById('seasonsContainer');
-        if (seasonsOpen && container) {
-            container.style.maxHeight = container.scrollHeight + 'px';
-        }
-    }
-</script>
-
-<%- include('../partials/footer') %>
-
-<script src="/js/api.js"></script>
-<script src="/js/search.js"></script>
+  <%- include('../partials/footer') %>
+  <script src="/js/player-detail.js"></script>
 </body>
 </html>
