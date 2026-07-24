@@ -647,7 +647,7 @@ function displayAllStats(stats, tableId) {
   }
 
   const statsOrder = [
-    'speed', 'acceleration', 'finishing', 'shotPower',
+    'acceleration', 'speed', 'finishing', 'shotPower',
     'longShots', 'positioning', 'volleys', 'penalties',
     'shortPassing', 'vision', 'crossing', 'longPassing',
     'freeKickAccuracy', 'curve', 'dribbling', 'ballControl',

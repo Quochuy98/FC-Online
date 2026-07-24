@@ -140,13 +140,13 @@ function normalizePlayer(raw, source) {
   for (const [sourceKey, stat] of Object.entries(raw.attr || {})) {
     const key = STAT_KEYS[sourceKey];
     if (!key || !stat) continue;
-    const value = Number(stat.value);
+    const value = Number(stat.value) + 3; // Tự động cộng +3 để giống với mặc định trên web FIFA Addict
     stats[key] = { name: stat.name, value, baseValue: value, originalValue: value };
   }
 
   const positions = Object.values(db.postlist || {})
     .filter((item) => item.name !== 'ovr')
-    .map((item) => ({ position: String(item.text || item.name).toUpperCase(), rating: String(item.value) }));
+    .map((item) => ({ position: String(item.text || item.name).toUpperCase(), rating: String(Number(item.value) + 3) }));
 
   const hiddenStats = Object.values(raw.traits || {}).map((trait) => ({
     name: String(trait.name || '').trim(),
@@ -170,8 +170,8 @@ function normalizePlayer(raw, source) {
     seasonBadge: raw.__seasonBadge || null,
     position: db.pos1,
     positions,
-    overallRating: Number(db.pos1val || db.current_ovr),
-    overallDisplay: Number(db.pos1val || db.current_ovr),
+    overallRating: Number(db.pos1val || db.current_ovr) + 3,
+    overallDisplay: Number(db.pos1val || db.current_ovr) + 3,
     avatarUrl: `https://s1.fifaaddict.com/fo4/players/${db.uid}.png`,
     mainImageUrl: `https://s1.fifaaddict.com/fo4/players/${db.uid}.png`,
     height: db.height,
